@@ -84,6 +84,8 @@ export const EXERCISE_LIBRARY: Exercise[] = [
   { id: "seated_calf_raise", name: "Seated Calf Raise", slot: "calves", equipment: "machines" },
   { id: "leg_press_calf_raise", name: "Leg Press Calf Raise", slot: "calves", equipment: "machines" },
   { id: "single_leg_calf_raise", name: "Single Leg Calf Raise", slot: "calves", equipment: "bodyweight" },
+  { id: "dumbbell_standing_calf_raise", name: "Dumbbell Standing Calf Raise", slot: "calves", equipment: "dumbbells" },
+  { id: "barbell_standing_calf_raise", name: "Barbell Standing Calf Raise", slot: "calves", equipment: "barbell" },
 
   // ABS
   { id: "crunch", name: "Crunch", slot: "abs", equipment: "bodyweight" },
@@ -92,10 +94,21 @@ export const EXERCISE_LIBRARY: Exercise[] = [
   { id: "side_plank", name: "Side Plank", slot: "abs", equipment: "bodyweight" },
   { id: "cable_crunch", name: "Cable Crunch", slot: "abs", equipment: "cables" },
   { id: "ab_crunch_machine", name: "Ab Crunch Machine", slot: "abs", equipment: "machines" },
+  { id: "barbell_rollout", name: "Barbell Rollout", slot: "abs", equipment: "barbell" },
+  { id: "weighted_situp", name: "Weighted Sit-Up", slot: "abs", equipment: "dumbbells" },
 
   // FOREARMS
   { id: "wrist_curl", name: "Wrist Curl", slot: "forearms", equipment: "dumbbells" },
   { id: "reverse_wrist_curl", name: "Reverse Wrist Curl", slot: "forearms", equipment: "dumbbells" },
   { id: "farmer_carry", name: "Farmer Carry", slot: "forearms", equipment: "dumbbells" },
   { id: "dead_hang", name: "Dead Hang", slot: "forearms", equipment: "bodyweight" },
+  { id: "barbell_wrist_curl", name: "Barbell Wrist Curl", slot: "forearms", equipment: "barbell" },
+  { id: "cable_wrist_curl", name: "Cable Wrist Curl", slot: "forearms", equipment: "cables" },
+  { id: "wrist_roller_machine", name: "Wrist Roller", slot: "forearms", equipment: "machines" },
+
+  // QUADS (cable gap)
+  { id: "cable_step_up", name: "Cable Step-Up", slot: "quads", equipment: "cables" },
+
+  // HAMSTRINGS (cable gap)
+  { id: "cable_pull_through", name: "Cable Pull-Through", slot: "hamstrings", equipment: "cables" },
 ];
