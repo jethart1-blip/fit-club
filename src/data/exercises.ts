@@ -84,4 +84,18 @@ export const EXERCISE_LIBRARY: Exercise[] = [
   { id: "seated_calf_raise", name: "Seated Calf Raise", slot: "calves", equipment: "machines" },
   { id: "leg_press_calf_raise", name: "Leg Press Calf Raise", slot: "calves", equipment: "machines" },
   { id: "single_leg_calf_raise", name: "Single Leg Calf Raise", slot: "calves", equipment: "bodyweight" },
+
+  // ABS
+  { id: "crunch", name: "Crunch", slot: "abs", equipment: "bodyweight" },
+  { id: "plank", name: "Plank", slot: "abs", equipment: "bodyweight" },
+  { id: "hanging_leg_raise", name: "Hanging Leg Raise", slot: "abs", equipment: "bodyweight" },
+  { id: "side_plank", name: "Side Plank", slot: "abs", equipment: "bodyweight" },
+  { id: "cable_crunch", name: "Cable Crunch", slot: "abs", equipment: "cables" },
+  { id: "ab_crunch_machine", name: "Ab Crunch Machine", slot: "abs", equipment: "machines" },
+
+  // FOREARMS
+  { id: "wrist_curl", name: "Wrist Curl", slot: "forearms", equipment: "dumbbells" },
+  { id: "reverse_wrist_curl", name: "Reverse Wrist Curl", slot: "forearms", equipment: "dumbbells" },
+  { id: "farmer_carry", name: "Farmer Carry", slot: "forearms", equipment: "dumbbells" },
+  { id: "dead_hang", name: "Dead Hang", slot: "forearms", equipment: "bodyweight" },
 ];
