@@ -1,4 +1,4 @@
-import type { UserProfile, Program, WorkoutLog } from '../types';
+import type { UserProfile, Program, WorkoutLog, MuscleGroupSlot } from '../types';
 
 const KEYS = {
   profile: 'fitclub_profile',
@@ -71,4 +71,24 @@ export function clearAllData(): void {
   localStorage.removeItem(KEYS.program);
   localStorage.removeItem(KEYS.logs);
   localStorage.removeItem(KEYS.currentDayIndex);
+}
+
+export function swapExercise(dayId: string, slot: MuscleGroupSlot, newExerciseId: string): void {
+  const program = getProgram();
+  if (program === null) return;
+
+  const day = program.days.find((d) => d.id === dayId);
+  if (!day) return;
+
+  const exercise = day.exercises.find((e) => e.slot === slot);
+  if (!exercise) return;
+
+  const oldExerciseId = exercise.exerciseId;
+  exercise.exerciseId = newExerciseId;
+  exercise.alternativeExerciseIds = [
+    oldExerciseId,
+    ...exercise.alternativeExerciseIds.filter((id) => id !== newExerciseId),
+  ];
+
+  saveProgram(program);
 }
