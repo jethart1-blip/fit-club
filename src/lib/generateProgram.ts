@@ -1,43 +1,46 @@
-import type { UserProfile, Program, ProgramDay, MovementSlot } from "../types";
+import type { UserProfile, Program, ProgramDay, ProgramExercise } from "../types";
 import { EXERCISE_LIBRARY } from "../data/exercises";
-
-function pickExercise(slot: MovementSlot, equipment: UserProfile["equipment"]): string {
-  const match = EXERCISE_LIBRARY.find(
-    (ex) => ex.slot === slot && ex.equipment.includes(equipment)
-  );
-  if (!match) {
-    throw new Error(`No exercise found for slot "${slot}" with equipment "${equipment}"`);
-  }
-  return match.id;
-}
-
-function buildDay(
-  id: string,
-  name: string,
-  slots: MovementSlot[],
-  equipment: UserProfile["equipment"]
-): ProgramDay {
-  return {
-    id,
-    name,
-    exercises: slots.map((slot) => ({
-      exerciseId: pickExercise(slot, equipment),
-      targetSets: 3,
-      targetRepsMin: 8,
-      targetRepsMax: 10,
-    })),
-  };
-}
+import { SPLITS } from "../data/splits";
 
 export function generateProgram(profile: UserProfile): Program {
-  const days: ProgramDay[] = [
-    buildDay("lower_a", "Lower A", ["squat_main", "hinge_secondary", "core"], profile.equipment),
-    buildDay("upper_a", "Upper A", ["push_main", "pull_main"], profile.equipment),
-    buildDay("lower_b", "Lower B", ["hinge_main", "squat_secondary", "core"], profile.equipment),
-    buildDay("upper_b", "Upper B", ["pull_secondary", "push_secondary"], profile.equipment),
-  ];
+  const split = SPLITS[profile.splitId];
+  const days: ProgramDay[] = [];
+
+  for (const dayTemplate of split.dayTemplates) {
+    const repRange = dayTemplate.repRange ?? { sets: 3, min: 8, max: 10 };
+    const restSeconds = dayTemplate.restSeconds ?? 90;
+    const dayExercises: ProgramExercise[] = [];
+
+    for (const slot of dayTemplate.slots) {
+      const matches = EXERCISE_LIBRARY.filter(
+        (ex) => ex.slot === slot && profile.equipment.includes(ex.equipment)
+      );
+
+      if (matches.length === 0) continue;
+
+      const primary = matches[0];
+      const alternatives = matches.slice(1).map((e) => e.id);
+
+      dayExercises.push({
+        slot,
+        exerciseId: primary.id,
+        alternativeExerciseIds: alternatives,
+        targetSets: repRange.sets,
+        targetRepsMin: repRange.min,
+        targetRepsMax: repRange.max,
+      });
+    }
+
+    days.push({
+      id: dayTemplate.id,
+      name: dayTemplate.name,
+      exercises: dayExercises,
+      restSeconds,
+    });
+  }
 
   return {
+    splitId: profile.splitId,
     days,
     createdAt: new Date().toISOString(),
   };
