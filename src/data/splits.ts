@@ -1,4 +1,4 @@
-import { SplitId, SplitDefinition, DayTemplate, MuscleGroupSlot } from "../types";
+import type { SplitId, SplitDefinition, DayTemplate, MuscleGroupSlot } from "../types";
 
 const DEFAULT_REP_RANGE: DayTemplate["repRange"] = { sets: 3, min: 8, max: 10 };
 const DEFAULT_REST_SECONDS = 90;

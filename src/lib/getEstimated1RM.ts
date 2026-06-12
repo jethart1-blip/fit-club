@@ -1,4 +1,4 @@
-import { SetEntry } from '../types';
+import type { SetEntry } from '../types';
 
 export function getEstimated1RM(weight: number, reps: number): number {
   return Math.round(weight * (1 + reps / 30));

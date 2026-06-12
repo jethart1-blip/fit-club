@@ -1,4 +1,4 @@
-import { Exercise } from '../types';
+import type { Exercise } from '../types';
 
 export const EXERCISE_LIBRARY: Exercise[] = [
   // CHEST
