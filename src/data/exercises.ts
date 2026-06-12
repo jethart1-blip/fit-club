@@ -62,4 +62,26 @@ export const EXERCISE_LIBRARY: Exercise[] = [
   { id: "leg_extension", name: "Leg Extension", slot: "quads", equipment: "machines" },
   { id: "air_squat", name: "Air Squat", slot: "quads", equipment: "bodyweight" },
   { id: "walking_lunge_quads", name: "Walking Lunge", slot: "quads", equipment: "bodyweight" },
+
+  // HAMSTRINGS
+  { id: "romanian_deadlift", name: "Romanian Deadlift", slot: "hamstrings", equipment: "barbell" },
+  { id: "stiff_leg_deadlift", name: "Stiff Leg Deadlift", slot: "hamstrings", equipment: "barbell" },
+  { id: "dumbbell_rdl", name: "Dumbbell RDL", slot: "hamstrings", equipment: "dumbbells" },
+  { id: "lying_leg_curl", name: "Lying Leg Curl", slot: "hamstrings", equipment: "machines" },
+  { id: "seated_leg_curl", name: "Seated Leg Curl", slot: "hamstrings", equipment: "machines" },
+  { id: "nordic_curl", name: "Nordic Curl", slot: "hamstrings", equipment: "bodyweight" },
+
+  // GLUTES
+  { id: "hip_thrust", name: "Hip Thrust", slot: "glutes", equipment: "barbell" },
+  { id: "sumo_deadlift", name: "Sumo Deadlift", slot: "glutes", equipment: "barbell" },
+  { id: "glute_bridge", name: "Glute Bridge", slot: "glutes", equipment: "dumbbells" },
+  { id: "hip_thrust_machine", name: "Hip Thrust Machine", slot: "glutes", equipment: "machines" },
+  { id: "cable_kickback", name: "Cable Kickback", slot: "glutes", equipment: "cables" },
+  { id: "walking_lunge_glutes", name: "Walking Lunge", slot: "glutes", equipment: "bodyweight" },
+
+  // CALVES
+  { id: "standing_calf_raise", name: "Standing Calf Raise", slot: "calves", equipment: "machines" },
+  { id: "seated_calf_raise", name: "Seated Calf Raise", slot: "calves", equipment: "machines" },
+  { id: "leg_press_calf_raise", name: "Leg Press Calf Raise", slot: "calves", equipment: "machines" },
+  { id: "single_leg_calf_raise", name: "Single Leg Calf Raise", slot: "calves", equipment: "bodyweight" },
 ];
