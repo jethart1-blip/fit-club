@@ -12,6 +12,8 @@ import {
 } from '../lib/storage';
 import { getSuggestedWeight } from '../lib/getSuggestedWeight';
 import { isDeloadWeek } from '../lib/getMesocycleWeek';
+import { getWarmupSets } from '../lib/getWarmupSets';
+import { getPlateBreakdown } from '../lib/getPlateBreakdown';
 import { EXERCISE_LIBRARY } from '../data/exercises';
 import { MUSCLE_ILLUSTRATIONS } from '../assets/muscles';
 import { FINISHERS } from '../data/finishers';
@@ -78,6 +80,8 @@ export function TodaysWorkout() {
   const [saved, setSaved] = useState(false);
 
   const [userName, setUserName] = useState<string>('');
+
+  const [expandedWarmup, setExpandedWarmup] = useState<string | null>(null);
 
   const [finisher, setFinisher] = useState<Finisher | null>(null);
   const [finisherStarted, setFinisherStarted] = useState(false);
@@ -572,9 +576,12 @@ export function TodaysWorkout() {
                       </p>
                       {suggestedWeights[exercise.exerciseId] !== null &&
                         suggestedWeights[exercise.exerciseId] !== undefined && (
-                        <p className="text-xs text-accent mt-0.5">
-                          Suggested: {suggestedWeights[exercise.exerciseId]} lbs
-                        </p>
+                        <button
+                          onClick={() => setExpandedWarmup((prev) => prev === exercise.exerciseId ? null : exercise.exerciseId)}
+                          className="text-xs text-accent mt-0.5 underline underline-offset-2 hover:text-accent/80 transition-colors"
+                        >
+                          Suggested: {suggestedWeights[exercise.exerciseId]} lbs {expandedWarmup === exercise.exerciseId ? '▲' : '▼'}
+                        </button>
                       )}
                     </div>
                     <div className="shrink-0 flex flex-col gap-1.5">
@@ -598,6 +605,46 @@ export function TodaysWorkout() {
                       )}
                     </div>
                   </div>
+
+                  {expandedWarmup === exercise.exerciseId && suggestedWeights[exercise.exerciseId] != null && (() => {
+                    const targetWeight = suggestedWeights[exercise.exerciseId];
+                    const warmups = getWarmupSets(targetWeight);
+                    const exDefForThis = EXERCISE_LIBRARY.find((e) => e.id === exercise.exerciseId);
+                    const isBarbell = exDefForThis?.equipment === 'barbell';
+                    const plates = isBarbell ? getPlateBreakdown(targetWeight) : null;
+
+                    return (
+                      <div className="bg-surface2 rounded-xl p-3 space-y-3 text-sm mt-3">
+                        {warmups.length > 0 && (
+                          <div>
+                            <p className="text-xs font-semibold text-textMuted uppercase tracking-wide mb-1.5">Warm-up Sets</p>
+                            <div className="space-y-1">
+                              {warmups.map((w, i) => (
+                                <p key={i} className="text-textPrimary">
+                                  <span className="text-textMuted">{w.percent}%:</span> {w.weight} lbs &times; {w.reps} reps
+                                </p>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                        {plates && (
+                          <div>
+                            <p className="text-xs font-semibold text-textMuted uppercase tracking-wide mb-1.5">Plates Per Side (45 lb bar)</p>
+                            {plates.perSide.length === 0 ? (
+                              <p className="text-textMuted">Just the bar — no plates needed.</p>
+                            ) : (
+                              <p className="text-textPrimary">
+                                {plates.perSide.join(', ')} lbs
+                                {!plates.exact && (
+                                  <span className="text-textMuted"> (≈{plates.achievedWeight} lbs)</span>
+                                )}
+                              </p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
 
                   {/* Set input rows */}
                   <div className="space-y-2 mt-3">
