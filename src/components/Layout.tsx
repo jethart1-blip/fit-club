@@ -5,6 +5,7 @@ const navLinks = [
   { to: '/today', label: 'Today' },
   { to: '/history', label: 'History' },
   { to: '/progress', label: 'Progress' },
+  { to: '/builder', label: 'Builder' },
   { to: '/settings', label: 'Settings' },
 ]
 

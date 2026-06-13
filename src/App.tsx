@@ -7,6 +7,7 @@ import { Home } from '@/pages/Home'
 import { Onboarding } from '@/pages/Onboarding'
 import { Settings } from '@/pages/Settings'
 import { TodaysWorkout } from '@/pages/TodaysWorkout'
+import { WorkoutBuilder } from '@/pages/WorkoutBuilder'
 import { getProfile } from '@/lib/storage'
 
 const Progress = lazy(() =>
@@ -61,6 +62,14 @@ function App() {
           element={
             <Layout>
               <Settings />
+            </Layout>
+          }
+        />
+        <Route
+          path="/builder"
+          element={
+            <Layout>
+              <WorkoutBuilder />
             </Layout>
           }
         />
