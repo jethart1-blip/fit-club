@@ -1,6 +1,13 @@
 import { useState, useMemo } from 'react';
-import type { WorkoutLog, Program } from '../types';
-import { getWorkoutLogs, getProgram } from '../lib/storage';
+import type { WorkoutLog, Program, ProgressPhoto } from '../types';
+import {
+  getWorkoutLogs,
+  getProgram,
+  getProgressPhotos,
+  saveProgressPhoto,
+  deleteProgressPhoto,
+} from '../lib/storage';
+import { compressImage } from '../lib/imageCompression';
 import { EXERCISE_LIBRARY } from '../data/exercises';
 import { getMaxEstimated1RM } from '../lib/getEstimated1RM';
 import { getAllTimePR } from '../lib/getPRs';
@@ -57,6 +64,9 @@ export function Progress() {
     logsSortedAsc.length > 0 ? logsSortedAsc.length - 1 : 0
   );
 
+  const [photos, setPhotos] = useState<ProgressPhoto[]>(getProgressPhotos);
+  const [photoWeight, setPhotoWeight] = useState('');
+
   const chartData = useMemo(() => {
     if (!selectedId) return [];
     return logsSortedAsc.flatMap((log) => {
@@ -92,12 +102,104 @@ export function Progress() {
   if (loggedExercises.length === 0) {
     return (
       <div className="min-h-screen bg-pageBg p-4">
-        <div className="max-w-lg mx-auto">
-          <div className="bg-surface rounded-2xl p-6 mb-4">
+        <div className="max-w-lg mx-auto space-y-4">
+          <div className="bg-surface rounded-2xl p-6">
             <h1 className="text-2xl font-display text-textPrimary">Progress</h1>
           </div>
           <div className="bg-surface rounded-2xl p-8 text-center">
             <p className="text-textMuted text-base">No progress data yet — log a workout first.</p>
+          </div>
+
+          {/* Progress Photos */}
+          <div className="bg-surface rounded-2xl p-6 space-y-4">
+            <h2 className="text-lg font-display text-textPrimary">Progress Photos</h2>
+
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-textMuted mb-1.5">Add a photo</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="block w-full text-sm text-textMuted file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-surface2 file:text-textPrimary hover:file:bg-surface2/80 transition-colors cursor-pointer"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (!file) return;
+                    try {
+                      const dataUrl = await compressImage(file);
+                      saveProgressPhoto({
+                        id: crypto.randomUUID(),
+                        date: new Date().toISOString(),
+                        dataUrl,
+                        ...(photoWeight !== '' && !isNaN(Number(photoWeight)) && {
+                          weightLbs: Number(photoWeight),
+                        }),
+                      });
+                      setPhotos(getProgressPhotos());
+                      setPhotoWeight('');
+                    } catch {
+                      // silently ignore compression errors
+                    }
+                    e.target.value = '';
+                  }}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-textMuted mb-1.5">
+                  Bodyweight at this photo (lbs) — optional
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  placeholder="e.g. 185"
+                  value={photoWeight}
+                  onChange={(e) => setPhotoWeight(e.target.value)}
+                  className="w-full rounded-xl border border-surface2 bg-surface2 px-4 py-2.5 text-sm text-textPrimary placeholder-textMuted focus:outline-none focus:border-accent transition-colors"
+                />
+              </div>
+              <p className="text-xs text-textMuted">Photos are stored on this device only.</p>
+            </div>
+
+            {photos.length === 0 ? (
+              <p className="text-textMuted text-sm text-center py-4">
+                No progress photos yet — upload your first one above.
+              </p>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {photos
+                  .slice()
+                  .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                  .map((photo) => (
+                    <div key={photo.id} className="space-y-1">
+                      <img
+                        src={photo.dataUrl}
+                        alt={`Progress photo ${formatDate(photo.date)}`}
+                        className="rounded-xl aspect-square object-cover w-full"
+                      />
+                      <div className="flex items-start justify-between gap-1 px-0.5">
+                        <div>
+                          <p className="text-xs text-textMuted leading-tight">{formatDate(photo.date)}</p>
+                          {photo.weightLbs !== undefined && (
+                            <p className="text-xs font-medium text-textPrimary leading-tight">
+                              {photo.weightLbs} lbs
+                            </p>
+                          )}
+                        </div>
+                        <button
+                          onClick={() => {
+                            deleteProgressPhoto(photo.id);
+                            setPhotos(getProgressPhotos());
+                          }}
+                          className="text-xs text-danger hover:opacity-70 transition-opacity shrink-0 mt-0.5"
+                          aria-label="Delete photo"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -300,6 +402,104 @@ export function Progress() {
                 </div>
               )}
             </>
+          )}
+        </div>
+
+        {/* Progress Photos */}
+        <div className="bg-surface rounded-2xl p-6 space-y-4">
+          <h2 className="text-lg font-display text-textPrimary">Progress Photos</h2>
+
+          {/* Upload controls */}
+          <div className="space-y-3">
+            <div>
+              <label className="block text-sm font-medium text-textMuted mb-1.5">
+                Add a photo
+              </label>
+              <input
+                type="file"
+                accept="image/*"
+                className="block w-full text-sm text-textMuted file:mr-3 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-surface2 file:text-textPrimary hover:file:bg-surface2/80 transition-colors cursor-pointer"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  try {
+                    const dataUrl = await compressImage(file);
+                    saveProgressPhoto({
+                      id: crypto.randomUUID(),
+                      date: new Date().toISOString(),
+                      dataUrl,
+                      ...(photoWeight !== '' && !isNaN(Number(photoWeight)) && {
+                        weightLbs: Number(photoWeight),
+                      }),
+                    });
+                    setPhotos(getProgressPhotos());
+                    setPhotoWeight('');
+                  } catch {
+                    // silently ignore compression errors
+                  }
+                  e.target.value = '';
+                }}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-textMuted mb-1.5">
+                Bodyweight at this photo (lbs) — optional
+              </label>
+              <input
+                type="number"
+                min="0"
+                step="0.1"
+                placeholder="e.g. 185"
+                value={photoWeight}
+                onChange={(e) => setPhotoWeight(e.target.value)}
+                className="w-full rounded-xl border border-surface2 bg-surface2 px-4 py-2.5 text-sm text-textPrimary placeholder-textMuted focus:outline-none focus:border-accent transition-colors"
+              />
+            </div>
+            <p className="text-xs text-textMuted">Photos are stored on this device only.</p>
+          </div>
+
+          {/* Photo grid */}
+          {photos.length === 0 ? (
+            <p className="text-textMuted text-sm text-center py-4">
+              No progress photos yet — upload your first one above.
+            </p>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {photos
+                .slice()
+                .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                .map((photo) => (
+                  <div key={photo.id} className="space-y-1">
+                    <div className="relative">
+                      <img
+                        src={photo.dataUrl}
+                        alt={`Progress photo ${formatDate(photo.date)}`}
+                        className="rounded-xl aspect-square object-cover w-full"
+                      />
+                    </div>
+                    <div className="flex items-start justify-between gap-1 px-0.5">
+                      <div>
+                        <p className="text-xs text-textMuted leading-tight">{formatDate(photo.date)}</p>
+                        {photo.weightLbs !== undefined && (
+                          <p className="text-xs font-medium text-textPrimary leading-tight">
+                            {photo.weightLbs} lbs
+                          </p>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => {
+                          deleteProgressPhoto(photo.id);
+                          setPhotos(getProgressPhotos());
+                        }}
+                        className="text-xs text-danger hover:opacity-70 transition-opacity shrink-0 mt-0.5"
+                        aria-label="Delete photo"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+                ))}
+            </div>
           )}
         </div>
       </div>

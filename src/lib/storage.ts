@@ -1,4 +1,4 @@
-import type { UserProfile, Program, WorkoutLog, MuscleGroupSlot, CustomExercise, CustomWorkout } from '../types';
+import type { UserProfile, Program, WorkoutLog, MuscleGroupSlot, CustomExercise, CustomWorkout, ProgressPhoto } from '../types';
 
 const KEYS = {
   profile: 'fitclub_profile',
@@ -7,6 +7,7 @@ const KEYS = {
   currentDayIndex: 'fitclub_currentDayIndex',
   customExercises: 'fitclub_customExercises',
   customWorkouts: 'fitclub_customWorkouts',
+  progressPhotos: 'fitclub_progressPhotos',
 } as const;
 
 export function getProfile(): UserProfile | null {
@@ -116,6 +117,28 @@ export function deleteCustomWorkout(id: string): void {
   const existing = getCustomWorkouts();
   const filtered = existing.filter((cw) => cw.id !== id);
   localStorage.setItem(KEYS.customWorkouts, JSON.stringify(filtered));
+}
+
+export function getProgressPhotos(): ProgressPhoto[] {
+  try {
+    const raw = localStorage.getItem(KEYS.progressPhotos);
+    if (raw === null) return [];
+    return JSON.parse(raw) as ProgressPhoto[];
+  } catch {
+    return [];
+  }
+}
+
+export function saveProgressPhoto(photo: ProgressPhoto): void {
+  const existing = getProgressPhotos();
+  existing.push(photo);
+  localStorage.setItem(KEYS.progressPhotos, JSON.stringify(existing));
+}
+
+export function deleteProgressPhoto(id: string): void {
+  const existing = getProgressPhotos();
+  const filtered = existing.filter((p) => p.id !== id);
+  localStorage.setItem(KEYS.progressPhotos, JSON.stringify(filtered));
 }
 
 export function swapExercise(dayId: string, slot: MuscleGroupSlot, newExerciseId: string): void {

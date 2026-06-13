@@ -124,3 +124,10 @@ export interface CustomWorkout {
   exercises: CustomWorkoutExercise[];
   createdAt: string;
 }
+
+export interface ProgressPhoto {
+  id: string;
+  date: string;
+  dataUrl: string;
+  weightLbs?: number;
+}
