@@ -102,3 +102,25 @@ export interface WorkoutLog {
   /** How the user felt before this workout: 1 (worst) – 10 (best). */
   readiness?: number;
 }
+
+export interface CustomExercise {
+  id: string;
+  name: string;
+  slot: MuscleGroupSlot;
+  equipment: EquipmentType;
+  custom: true;
+}
+
+export interface CustomWorkoutExercise {
+  exerciseId: string;
+  targetSets: number;
+  targetRepsMin: number;
+  targetRepsMax: number;
+}
+
+export interface CustomWorkout {
+  id: string;
+  name: string;
+  exercises: CustomWorkoutExercise[];
+  createdAt: string;
+}

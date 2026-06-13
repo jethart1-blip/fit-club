@@ -1,10 +1,12 @@
-import type { UserProfile, Program, WorkoutLog, MuscleGroupSlot } from '../types';
+import type { UserProfile, Program, WorkoutLog, MuscleGroupSlot, CustomExercise, CustomWorkout } from '../types';
 
 const KEYS = {
   profile: 'fitclub_profile',
   program: 'fitclub_program',
   logs: 'fitclub_logs',
   currentDayIndex: 'fitclub_currentDayIndex',
+  customExercises: 'fitclub_customExercises',
+  customWorkouts: 'fitclub_customWorkouts',
 } as const;
 
 export function getProfile(): UserProfile | null {
@@ -71,6 +73,49 @@ export function clearAllData(): void {
   localStorage.removeItem(KEYS.program);
   localStorage.removeItem(KEYS.logs);
   localStorage.removeItem(KEYS.currentDayIndex);
+}
+
+export function getCustomExercises(): CustomExercise[] {
+  try {
+    const raw = localStorage.getItem(KEYS.customExercises);
+    if (raw === null) return [];
+    return JSON.parse(raw) as CustomExercise[];
+  } catch {
+    return [];
+  }
+}
+
+export function saveCustomExercise(ex: CustomExercise): void {
+  const existing = getCustomExercises();
+  existing.push(ex);
+  localStorage.setItem(KEYS.customExercises, JSON.stringify(existing));
+}
+
+export function getCustomWorkouts(): CustomWorkout[] {
+  try {
+    const raw = localStorage.getItem(KEYS.customWorkouts);
+    if (raw === null) return [];
+    return JSON.parse(raw) as CustomWorkout[];
+  } catch {
+    return [];
+  }
+}
+
+export function saveCustomWorkout(w: CustomWorkout): void {
+  const existing = getCustomWorkouts();
+  const idx = existing.findIndex((cw) => cw.id === w.id);
+  if (idx !== -1) {
+    existing[idx] = w;
+  } else {
+    existing.push(w);
+  }
+  localStorage.setItem(KEYS.customWorkouts, JSON.stringify(existing));
+}
+
+export function deleteCustomWorkout(id: string): void {
+  const existing = getCustomWorkouts();
+  const filtered = existing.filter((cw) => cw.id !== id);
+  localStorage.setItem(KEYS.customWorkouts, JSON.stringify(filtered));
 }
 
 export function swapExercise(dayId: string, slot: MuscleGroupSlot, newExerciseId: string): void {
