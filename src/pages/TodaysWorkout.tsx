@@ -1120,7 +1120,7 @@ export function TodaysWorkout() {
           ) : (
             <button
               onClick={handleFinish}
-              className="w-full bg-accent hover:bg-accent/90 active:bg-accent/80 text-pageBg font-semibold rounded-xl py-3 text-sm transition-colors active:scale-95 transition-transform"
+              className="w-full bg-accent hover:bg-accent/90 active:bg-accent/80 text-pageBg font-semibold rounded-full py-3 text-sm transition-colors active:scale-95 transition-transform"
             >
               Finish Workout
             </button>

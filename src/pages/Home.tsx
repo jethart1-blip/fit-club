@@ -166,7 +166,7 @@ export function Home() {
       <div className="max-w-sm mx-auto px-4 pt-10 pb-24 space-y-6">
 
         {/* Greeting */}
-        <div className="bg-surface rounded-tl-3xl rounded-br-3xl p-5 space-y-1">
+        <div className="bg-surface rounded-tl-3xl rounded-br-3xl rounded-tr-lg rounded-bl-lg p-5 space-y-1">
           <p className="text-sm font-medium text-textMuted uppercase tracking-widest">
             {getGreeting()}
           </p>

@@ -87,10 +87,10 @@ export function Achievements() {
             {achievements.map((a) => (
               <div
                 key={a.id}
-                className={`rounded-xl border px-4 py-3 space-y-1 transition-all ${
+                className={`border px-4 py-3 space-y-1 transition-all ${
                   a.unlocked
-                    ? 'border-accent bg-accent/5 opacity-100'
-                    : 'border-surface2 bg-surface2 opacity-40 grayscale'
+                    ? 'rounded-tr-3xl rounded-bl-3xl rounded-tl-lg rounded-br-lg border-accent bg-accent/5 opacity-100'
+                    : 'rounded-xl border-surface2 bg-surface2 opacity-40 grayscale'
                 } ${a.unlocked ? 'achievement-unlock-pulse' : ''}`}
               >
                 <p className="text-sm font-semibold text-textPrimary leading-tight">{a.label}</p>
