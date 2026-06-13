@@ -129,7 +129,11 @@
   }
 
   body {
-    @apply bg-pageBg text-textPrimary font-body;
+    @apply text-textPrimary font-body;
+    background-color: var(--color-page-bg);
+    background-image: radial-gradient(ellipse 80% 50% at 50% -10%, color-mix(in srgb, var(--color-surface) 40%, transparent), transparent);
+    background-attachment: fixed;
+    min-height: 100vh;
   }
 
   h1, h2, h3 {

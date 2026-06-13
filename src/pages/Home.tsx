@@ -166,7 +166,7 @@ export function Home() {
       <div className="max-w-sm mx-auto px-4 pt-10 pb-24 space-y-6">
 
         {/* Greeting */}
-        <div className="space-y-1">
+        <div className="bg-surface rounded-tl-3xl rounded-br-3xl p-5 space-y-1">
           <p className="text-sm font-medium text-textMuted uppercase tracking-widest">
             {getGreeting()}
           </p>
@@ -318,7 +318,7 @@ export function Home() {
         {/* Start Workout CTA */}
         <button
           onClick={() => navigate('/today?checkin=1')}
-          className="w-full bg-accent hover:bg-accent/90 active:bg-accent/80 text-pageBg font-display font-bold rounded-2xl py-5 text-xl tracking-tight transition-colors shadow-lg shadow-accent/20 active:scale-95 transition-transform"
+          className="w-full bg-accent hover:bg-accent/90 active:bg-accent/80 text-pageBg font-display font-bold rounded-full py-5 text-xl tracking-tight transition-colors shadow-lg shadow-accent/20 active:scale-95 transition-transform"
         >
           Start Workout
         </button>
