@@ -20,6 +20,8 @@ import { FINISHERS } from '../data/finishers';
 import type { Finisher } from '../data/finishers';
 import { WARMUP_SEQUENCE } from '../data/warmups';
 import type { WarmupMove } from '../data/warmups';
+import { STRETCH_SEQUENCE } from '../data/stretches';
+import type { Stretch } from '../data/stretches';
 
 type SetInputs = { weight: string; reps: string; rpe: string };
 
@@ -90,6 +92,12 @@ export function TodaysWorkout() {
   const [warmupSecondsLeft, setWarmupSecondsLeft] = useState<number | null>(null);
   const [warmupDeclined, setWarmupDeclined] = useState(false);
   const [warmupComplete, setWarmupComplete] = useState(false);
+
+  const [stretchStarted, setStretchStarted] = useState(false);
+  const [stretchIndex, setStretchIndex] = useState(0);
+  const [stretchSecondsLeft, setStretchSecondsLeft] = useState<number | null>(null);
+  const [stretchDeclined, setStretchDeclined] = useState(false);
+  const [stretchComplete, setStretchComplete] = useState(false);
 
   const [finisher, setFinisher] = useState<Finisher | null>(null);
   const [finisherStarted, setFinisherStarted] = useState(false);
@@ -163,6 +171,30 @@ export function TodaysWorkout() {
     setWarmupIndex((i) => i + 1);
     setWarmupSecondsLeft(30);
   }, [warmupSecondsLeft, warmupStarted, warmupIndex]);
+
+  // Stretch timer countdown
+  useEffect(() => {
+    if (stretchSecondsLeft === null || stretchSecondsLeft <= 0) return;
+    const id = setInterval(() => {
+      setStretchSecondsLeft((prev) => {
+        if (prev === null || prev <= 1) return null;
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(id);
+  }, [stretchSecondsLeft]);
+
+  // Stretch advancement
+  useEffect(() => {
+    if (!stretchStarted || stretchSecondsLeft !== null) return;
+    if (stretchIndex >= STRETCH_SEQUENCE.length - 1) {
+      setStretchStarted(false);
+      setStretchComplete(true);
+      return;
+    }
+    setStretchIndex((i) => i + 1);
+    setStretchSecondsLeft(30);
+  }, [stretchSecondsLeft, stretchStarted, stretchIndex]);
 
   // Rest timer countdown
   useEffect(() => {
@@ -344,6 +376,78 @@ export function TodaysWorkout() {
               );
             })}
           </div>
+
+          {!saved && (
+            <div className="bg-surface rounded-2xl p-6 space-y-4">
+              {stretchComplete ? (
+                <p className="text-center text-accent font-display text-lg">Cooldown complete! 🧘</p>
+              ) : stretchDeclined ? null : !stretchStarted ? (
+                <>
+                  <div className="text-center">
+                    <h2 className="font-display text-xl text-textPrimary leading-tight">Cooldown Stretches?</h2>
+                    <p className="text-textMuted text-sm mt-1">
+                      {STRETCH_SEQUENCE.length} stretches, 30s each — about {Math.round(STRETCH_SEQUENCE.length * 30 / 60)} minutes.
+                    </p>
+                  </div>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => {
+                        setStretchStarted(true);
+                        setStretchIndex(0);
+                        setStretchSecondsLeft(30);
+                      }}
+                      className="flex-1 bg-accent hover:bg-accent/90 active:bg-accent/80 text-pageBg font-semibold rounded-xl py-3 text-sm transition-colors"
+                    >
+                      Start Cooldown
+                    </button>
+                    <button
+                      onClick={() => setStretchDeclined(true)}
+                      className="flex-1 bg-surface2 hover:bg-surface2/80 text-textPrimary font-medium rounded-xl py-3 text-sm transition-colors"
+                    >
+                      Skip
+                    </button>
+                  </div>
+                </>
+              ) : (() => {
+                const currentStretch: Stretch = STRETCH_SEQUENCE[stretchIndex];
+                const stretchRingProgress = stretchSecondsLeft !== null ? stretchSecondsLeft / 30 : 0;
+                const stretchRingOffset = RING_CIRCUMFERENCE * (1 - stretchRingProgress);
+                return (
+                  <div className="text-center space-y-4">
+                    <div>
+                      <p className="text-xs text-textMuted uppercase tracking-wide font-medium">
+                        Stretch {stretchIndex + 1} of {STRETCH_SEQUENCE.length}
+                      </p>
+                      <h2 className="text-xl font-display text-textPrimary mt-1">{currentStretch.name}</h2>
+                      <p className="text-sm text-textMuted mt-1">{currentStretch.description}</p>
+                    </div>
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="relative w-24 h-24">
+                        <svg className="w-full h-full -rotate-90" viewBox="0 0 96 96" aria-label={`Stretch timer: ${stretchSecondsLeft ?? 0} seconds remaining`}>
+                          <circle cx="48" cy="48" r={RING_RADIUS} fill="none" stroke="#363b46" strokeWidth="6" />
+                          <circle
+                            cx="48" cy="48" r={RING_RADIUS} fill="none" stroke="#d4ff4f" strokeWidth="6" strokeLinecap="round"
+                            strokeDasharray={RING_CIRCUMFERENCE}
+                            strokeDashoffset={stretchRingOffset}
+                            style={{ transition: 'stroke-dashoffset 1s linear' }}
+                          />
+                        </svg>
+                        <div className="absolute inset-0 flex flex-col items-center justify-center">
+                          <span className="text-2xl font-display text-textPrimary leading-none">{stretchSecondsLeft ?? 0}</span>
+                        </div>
+                      </div>
+                      <button
+                        onClick={() => { setStretchStarted(false); setStretchDeclined(true); }}
+                        className="text-textMuted text-xs font-medium underline underline-offset-2 hover:text-textPrimary transition-colors"
+                      >
+                        Skip Cooldown
+                      </button>
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          )}
 
           {!saved && (
             <div className="bg-surface rounded-2xl p-8 space-y-7">
