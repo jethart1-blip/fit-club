@@ -373,4 +373,26 @@ export const SPLITS: Record<SplitId, SplitDefinition> = {
       { id: "sc_lower_core", name: "Lower + Core", slots: ["hamstrings", "glutes", "calves", "abs"] as MuscleGroupSlot[], repRange: { sets: 3, min: 12, max: 15 }, restSeconds: 60 },
     ],
   },
+
+  stronglifts: {
+    id: "stronglifts",
+    name: "StrongLifts 5x5",
+    description: "A classic beginner strength program: 2 alternating full-body workouts, 5 sets of 5 reps on the big barbell lifts.",
+    dayTemplates: [
+      { id: "sl_a", name: "Workout A", slots: ["quads", "chest", "back"] as MuscleGroupSlot[], repRange: { sets: 5, min: 5, max: 5 }, restSeconds: 120 },
+      { id: "sl_b", name: "Workout B", slots: ["quads", "shoulders", "back"] as MuscleGroupSlot[], repRange: { sets: 5, min: 5, max: 5 }, restSeconds: 120 },
+    ],
+  },
+
+  gzclp: {
+    id: "gzclp",
+    name: "GZCLP (Simplified)",
+    description: "A simplified 4-day adaptation of GZCLP, rotating squat/bench/deadlift/OHP as the main lift each day with accessory work. Note: true GZCLP uses tiered set/rep schemes (T1/T2/T3) per exercise, which this app approximates with a single rep range per day.",
+    dayTemplates: [
+      { id: "gz_1", name: "Day 1: Squat Focus", slots: ["quads", "chest", "back", "abs"] as MuscleGroupSlot[], repRange: { sets: 4, min: 5, max: 5 }, restSeconds: 120 },
+      { id: "gz_2", name: "Day 2: OHP Focus", slots: ["shoulders", "back", "biceps", "abs"] as MuscleGroupSlot[], repRange: { sets: 4, min: 5, max: 5 }, restSeconds: 120 },
+      { id: "gz_3", name: "Day 3: Bench Focus", slots: ["chest", "quads", "back", "triceps"] as MuscleGroupSlot[], repRange: { sets: 4, min: 5, max: 5 }, restSeconds: 120 },
+      { id: "gz_4", name: "Day 4: Deadlift Focus", slots: ["back", "shoulders", "biceps", "abs"] as MuscleGroupSlot[], repRange: { sets: 4, min: 5, max: 5 }, restSeconds: 120 },
+    ],
+  },
 };

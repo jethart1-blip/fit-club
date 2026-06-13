@@ -37,7 +37,9 @@ export type SplitId =
   | "basketball"
   | "football"
   | "baseball"
-  | "soccer";
+  | "soccer"
+  | "stronglifts"
+  | "gzclp";
 
 export interface UserProfile {
   name: string;
