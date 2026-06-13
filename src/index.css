@@ -63,6 +63,10 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-pageBg text-textPrimary font-body;
+  }
+
+  h1, h2, h3 {
+    @apply font-display;
   }
 }

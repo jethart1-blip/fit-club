@@ -11,7 +11,18 @@ export default {
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
       },
+      fontFamily: {
+        display: ['Oswald', 'sans-serif'],
+        body: ['Inter', 'sans-serif'],
+      },
       colors: {
+        pageBg: '#1a1d23',
+        surface: '#2a2e37',
+        surface2: '#363b46',
+        textPrimary: '#f1f1ef',
+        textMuted: '#9ca3af',
+        accent2: '#2dd4bf',
+        danger: '#ef4444',
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',
         card: {
@@ -35,7 +46,7 @@ export default {
           foreground: 'hsl(var(--muted-foreground))',
         },
         accent: {
-          DEFAULT: 'hsl(var(--accent))',
+          DEFAULT: '#d4ff4f',
           foreground: 'hsl(var(--accent-foreground))',
         },
         destructive: {
