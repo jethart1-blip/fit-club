@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { UserProfile, EquipmentType, Goal, SplitId } from '../types';
-import { getProfile, saveProfile, saveProgram, setCurrentDayIndex, clearAllData, getCustomWorkouts } from '../lib/storage';
+import type { UserProfile, EquipmentType, Goal, SplitId, CustomSplit } from '../types';
+import { getProfile, saveProfile, saveProgram, setCurrentDayIndex, clearAllData, getCustomWorkouts, getCustomSplits } from '../lib/storage';
 import { generateProgram } from '../lib/generateProgram';
 import { SPLITS } from '../data/splits';
 
@@ -40,9 +40,11 @@ export function Settings() {
   const navigate = useNavigate();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [selectedSplitId, setSelectedSplitId] = useState<SplitId | null>(null);
+  const [selectedCustomSplitId, setSelectedCustomSplitId] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState('');
   const [warningMessage, setWarningMessage] = useState('');
   const [customWorkoutCount, setCustomWorkoutCount] = useState(0);
+  const [customSplits, setCustomSplits] = useState<CustomSplit[]>([]);
 
   useEffect(() => {
     const p = getProfile();
@@ -52,7 +54,9 @@ export function Settings() {
     }
     setProfile(p);
     setSelectedSplitId(p.splitId);
+    setSelectedCustomSplitId(p.customSplitId ?? null);
     setCustomWorkoutCount(getCustomWorkouts().length);
+    setCustomSplits(getCustomSplits());
   }, [navigate]);
 
   function showSuccess(msg: string) {
@@ -62,8 +66,12 @@ export function Settings() {
   }
 
   function handleSaveSplit() {
-    if (!profile || !selectedSplitId || selectedSplitId === profile.splitId) return;
-    const updated: UserProfile = { ...profile, splitId: selectedSplitId };
+    if (!profile || !selectedSplitId || !splitChanged) return;
+    const updated: UserProfile = {
+      ...profile,
+      splitId: selectedSplitId,
+      ...(selectedSplitId === 'custom' ? { customSplitId: selectedCustomSplitId ?? undefined } : {}),
+    };
     try {
       const result = generateProgram(updated);
       saveProfile(updated);
@@ -109,7 +117,10 @@ export function Settings() {
 
   if (!profile) return null;
 
-  const splitChanged = selectedSplitId !== null && selectedSplitId !== profile.splitId;
+  const splitChanged =
+    selectedSplitId !== null &&
+    (selectedSplitId !== profile.splitId ||
+      (selectedSplitId === 'custom' && selectedCustomSplitId !== (profile.customSplitId ?? null)));
 
   return (
     <div className="min-h-screen bg-pageBg p-4">
@@ -147,7 +158,7 @@ export function Settings() {
           <p className="text-xs text-textMuted mb-4">Select a new training structure.</p>
           <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
             {Object.values(SPLITS)
-              .filter((split) => split.id !== 'custom' || customWorkoutCount > 0)
+              .filter((split) => split.id !== 'custom')
               .map((split) => (
                 <label key={split.id} className={splitCardClass(selectedSplitId === split.id)}>
                   <input
@@ -170,10 +181,38 @@ export function Settings() {
                   </div>
                 </label>
               ))}
+            {customSplits.map((cs) => {
+              const isSelected = selectedSplitId === 'custom' && selectedCustomSplitId === cs.id;
+              return (
+                <label key={cs.id} className={splitCardClass(isSelected)}>
+                  <input
+                    type="radio"
+                    name="splitId"
+                    value={cs.id}
+                    checked={isSelected}
+                    onChange={() => {
+                      setSelectedSplitId('custom');
+                      setSelectedCustomSplitId(cs.id);
+                    }}
+                    className="sr-only"
+                  />
+                  <div>
+                    <div>{cs.name}</div>
+                    <div
+                      className={`text-xs font-normal mt-0.5 ${
+                        isSelected ? 'text-accent' : 'text-textMuted'
+                      }`}
+                    >
+                      {cs.workoutIds.length} day{cs.workoutIds.length !== 1 ? 's' : ''}
+                    </div>
+                  </div>
+                </label>
+              );
+            })}
           </div>
-          {customWorkoutCount === 0 && (
+          {customSplits.length === 0 && (
             <p className="mt-3 text-xs text-textMuted">
-              Build a workout in the Workout Builder to unlock &ldquo;My Custom Split&rdquo;.
+              Build a workout and assemble it into a split in the Workout Builder to unlock custom splits.
             </p>
           )}
           <button

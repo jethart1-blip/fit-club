@@ -4,12 +4,17 @@ import type { DropResult } from '@hello-pangea/dnd'
 import { EXERCISE_LIBRARY } from '../data/exercises'
 import {
   getCustomExercises,
+  getCustomWorkouts,
   saveCustomExercise,
   saveCustomWorkout,
+  getCustomSplits,
+  saveCustomSplit,
+  deleteCustomSplit,
 } from '../lib/storage'
 import type {
   CustomExercise,
   CustomWorkout,
+  CustomSplit,
   CustomWorkoutExercise,
   MuscleGroupSlot,
   EquipmentType,
@@ -69,8 +74,17 @@ export function WorkoutBuilder() {
   const [successMsg, setSuccessMsg] = useState('')
   const [workoutId] = useState<string>(() => crypto.randomUUID())
 
+  // ─── Custom Split state ──────────────────────────────────────────────────────
+  const [customWorkouts, setCustomWorkouts] = useState<CustomWorkout[]>([])
+  const [customSplits, setCustomSplits] = useState<CustomSplit[]>([])
+  const [splitName, setSplitName] = useState('')
+  const [splitWorkoutIds, setSplitWorkoutIds] = useState<string[]>([])
+  const [splitSuccessMsg, setSplitSuccessMsg] = useState('')
+
   useEffect(() => {
     setCustomExercises(getCustomExercises())
+    setCustomWorkouts(getCustomWorkouts())
+    setCustomSplits(getCustomSplits())
   }, [])
 
   // Merge library + custom, group by slot
@@ -157,6 +171,45 @@ export function WorkoutBuilder() {
     setShowCustomForm(false)
   }
 
+  // ─── Split drag & drop ───────────────────────────────────────────────────────
+
+  function onSplitDragEnd(result: DropResult) {
+    const { source, destination, draggableId } = result
+    if (!destination) return
+
+    if (source.droppableId === 'saved-workouts' && destination.droppableId === 'split-days') {
+      const workoutId = draggableId.slice('workout-'.length)
+      const next = Array.from(splitWorkoutIds)
+      next.splice(destination.index, 0, workoutId)
+      setSplitWorkoutIds(next)
+    } else if (source.droppableId === 'split-days' && destination.droppableId === 'split-days') {
+      const next = Array.from(splitWorkoutIds)
+      const [moved] = next.splice(source.index, 1)
+      next.splice(destination.index, 0, moved)
+      setSplitWorkoutIds(next)
+    }
+  }
+
+  function handleSaveSplit() {
+    const name = splitName.trim()
+    if (!name || splitWorkoutIds.length === 0) return
+    saveCustomSplit({
+      id: crypto.randomUUID(),
+      name,
+      workoutIds: splitWorkoutIds,
+      createdAt: new Date().toISOString(),
+    })
+    setCustomSplits(getCustomSplits())
+    setSplitSuccessMsg('Split saved!')
+    setTimeout(() => setSplitSuccessMsg(''), 3000)
+    setSplitName('')
+    setSplitWorkoutIds([])
+  }
+
+  function getSplitWorkoutName(id: string) {
+    return customWorkouts.find(w => w.id === id)?.name ?? id
+  }
+
   // ─── Save workout ────────────────────────────────────────────────────────────
 
   function handleSaveWorkout() {
@@ -170,6 +223,7 @@ export function WorkoutBuilder() {
       createdAt: new Date().toISOString(),
     }
     saveCustomWorkout(workout)
+    setCustomWorkouts(getCustomWorkouts())
     setSuccessMsg('Workout saved!')
     setTimeout(() => setSuccessMsg(''), 3000)
   }
@@ -482,6 +536,196 @@ export function WorkoutBuilder() {
 
         </div>
       </DragDropContext>
+
+      {/* ── Build a Custom Split ──────────────────────────────────────────────── */}
+      <div className="space-y-4 pt-2">
+        <div>
+          <h2 className="text-base font-display font-semibold text-textPrimary uppercase tracking-wide">
+            Build a Custom Split
+          </h2>
+          <p className="text-xs text-textMuted mt-0.5">
+            Arrange your saved workouts into a weekly schedule.
+          </p>
+        </div>
+
+        {customWorkouts.length === 0 ? (
+          <p className="text-sm text-textMuted bg-surface rounded-2xl p-4 text-center">
+            Save at least one workout above before building a split.
+          </p>
+        ) : (
+          <>
+            <DragDropContext onDragEnd={onSplitDragEnd}>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+
+                {/* LEFT: Saved Workouts */}
+                <div className="bg-surface rounded-2xl p-4 space-y-3">
+                  <h3 className="text-sm font-display font-semibold text-textPrimary uppercase tracking-wide">
+                    Saved Workouts
+                  </h3>
+                  <Droppable droppableId="saved-workouts" isDropDisabled>
+                    {provided => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.droppableProps}
+                        className="space-y-1.5"
+                      >
+                        {customWorkouts.map((workout, index) => (
+                          <Draggable
+                            key={`workout-${workout.id}`}
+                            draggableId={`workout-${workout.id}`}
+                            index={index}
+                          >
+                            {(provided, snapshot) => (
+                              <div
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                {...provided.dragHandleProps}
+                                className={`flex items-center gap-2 px-3 py-2.5 rounded-xl text-sm select-none transition-colors ${
+                                  snapshot.isDragging
+                                    ? 'bg-accent/20 text-accent shadow-lg ring-1 ring-accent/30'
+                                    : 'bg-pageBg text-textPrimary hover:bg-surface2 cursor-grab active:cursor-grabbing'
+                                }`}
+                              >
+                                <span className="text-textMuted opacity-40 text-xs shrink-0">⠿</span>
+                                <span className="flex-1 leading-tight font-medium">{workout.name}</span>
+                                <span className="text-xs text-textMuted opacity-60 shrink-0">
+                                  {workout.exercises.length} exercise{workout.exercises.length !== 1 ? 's' : ''}
+                                </span>
+                              </div>
+                            )}
+                          </Draggable>
+                        ))}
+                        {provided.placeholder}
+                      </div>
+                    )}
+                  </Droppable>
+                </div>
+
+                {/* RIGHT: Split Day Order */}
+                <div className="bg-surface rounded-2xl p-4 space-y-3">
+                  <h3 className="text-sm font-display font-semibold text-textPrimary uppercase tracking-wide">
+                    Split Day Order
+                  </h3>
+                  <input
+                    type="text"
+                    placeholder="Name your split…"
+                    value={splitName}
+                    onChange={e => setSplitName(e.target.value)}
+                    className="w-full bg-pageBg border border-surface2 rounded-xl px-4 py-2.5 text-sm text-textPrimary placeholder-textMuted focus:outline-none focus:border-accent transition-colors"
+                  />
+                  <Droppable droppableId="split-days">
+                    {(provided, snapshot) => (
+                      <div
+                        ref={provided.innerRef}
+                        {...provided.droppableProps}
+                        className={`min-h-[140px] rounded-xl p-2 space-y-2 border border-dashed transition-colors ${
+                          snapshot.isDraggingOver
+                            ? 'bg-accent/5 border-accent/40'
+                            : 'bg-pageBg border-surface2'
+                        }`}
+                      >
+                        {splitWorkoutIds.length === 0 && !snapshot.isDraggingOver && (
+                          <div className="flex flex-col items-center justify-center min-h-[120px] gap-2">
+                            <span className="text-2xl opacity-20">⊕</span>
+                            <p className="text-textMuted text-sm text-center leading-relaxed">
+                              Drag workouts here
+                              <br />
+                              <span className="text-xs opacity-60">to build your split</span>
+                            </p>
+                          </div>
+                        )}
+                        {splitWorkoutIds.map((id, index) => (
+                          <Draggable
+                            key={`splititem-${index}-${id}`}
+                            draggableId={`splititem-${index}-${id}`}
+                            index={index}
+                          >
+                            {(provided, snapshot) => (
+                              <div
+                                ref={provided.innerRef}
+                                {...provided.draggableProps}
+                                className={`flex items-center gap-2 bg-surface2 rounded-xl px-3 py-2.5 text-sm transition-shadow ${
+                                  snapshot.isDragging ? 'shadow-xl ring-1 ring-accent/30' : ''
+                                }`}
+                              >
+                                <span
+                                  {...provided.dragHandleProps}
+                                  className="text-textMuted opacity-40 text-xs cursor-grab active:cursor-grabbing shrink-0"
+                                >
+                                  ⠿
+                                </span>
+                                <span className="text-xs font-bold text-accent/60 w-5 shrink-0 text-center">
+                                  {index + 1}
+                                </span>
+                                <span className="flex-1 font-medium text-textPrimary leading-tight">
+                                  {getSplitWorkoutName(id)}
+                                </span>
+                                <button
+                                  onClick={() => {
+                                    const next = Array.from(splitWorkoutIds)
+                                    next.splice(index, 1)
+                                    setSplitWorkoutIds(next)
+                                  }}
+                                  aria-label="Remove day"
+                                  className="text-textMuted hover:text-red-400 shrink-0 w-5 h-5 flex items-center justify-center rounded text-xs font-bold transition-colors"
+                                >
+                                  ✕
+                                </button>
+                              </div>
+                            )}
+                          </Draggable>
+                        ))}
+                        {provided.placeholder}
+                      </div>
+                    )}
+                  </Droppable>
+                  <button
+                    onClick={handleSaveSplit}
+                    disabled={!splitName.trim() || splitWorkoutIds.length === 0}
+                    className="w-full bg-accent hover:bg-accent/90 active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed text-pageBg font-display font-bold rounded-xl px-5 py-2.5 text-sm tracking-wide uppercase transition-all"
+                  >
+                    Save Split
+                  </button>
+                  {splitSuccessMsg && (
+                    <p className="text-green-400 text-xs text-center font-medium">{splitSuccessMsg}</p>
+                  )}
+                </div>
+              </div>
+            </DragDropContext>
+
+            {/* Your Custom Splits list */}
+            {customSplits.length > 0 && (
+              <div className="bg-surface rounded-2xl p-4 space-y-2">
+                <h3 className="text-sm font-display font-semibold text-textPrimary uppercase tracking-wide mb-3">
+                  Your Custom Splits
+                </h3>
+                {customSplits.map(split => (
+                  <div
+                    key={split.id}
+                    className="flex items-center justify-between bg-pageBg rounded-xl px-4 py-3"
+                  >
+                    <div>
+                      <p className="text-sm font-medium text-textPrimary">{split.name}</p>
+                      <p className="text-xs text-textMuted mt-0.5">
+                        {split.workoutIds.length} day{split.workoutIds.length !== 1 ? 's' : ''}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => {
+                        deleteCustomSplit(split.id)
+                        setCustomSplits(getCustomSplits())
+                      }}
+                      className="text-xs text-textMuted hover:text-red-400 font-semibold transition-colors"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
+      </div>
     </div>
   )
 }

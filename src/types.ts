@@ -46,6 +46,7 @@ export interface UserProfile {
   splitId: SplitId;
   createdAt: string;
   programStartDate?: string;
+  customSplitId?: string;
 }
 
 export interface DayTemplate {
@@ -127,6 +128,13 @@ export interface CustomWorkout {
   id: string;
   name: string;
   exercises: CustomWorkoutExercise[];
+  createdAt: string;
+}
+
+export interface CustomSplit {
+  id: string;
+  name: string;
+  workoutIds: string[];
   createdAt: string;
 }
 

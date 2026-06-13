@@ -1,4 +1,4 @@
-import type { UserProfile, Program, WorkoutLog, MuscleGroupSlot, CustomExercise, CustomWorkout, ProgressPhoto, WeightEntry } from '../types';
+import type { UserProfile, Program, WorkoutLog, MuscleGroupSlot, CustomExercise, CustomWorkout, CustomSplit, ProgressPhoto, WeightEntry } from '../types';
 
 const KEYS = {
   profile: 'fitclub_profile',
@@ -7,6 +7,7 @@ const KEYS = {
   currentDayIndex: 'fitclub_currentDayIndex',
   customExercises: 'fitclub_customExercises',
   customWorkouts: 'fitclub_customWorkouts',
+  customSplits: 'fitclub_customSplits',
   progressPhotos: 'fitclub_progressPhotos',
   weightEntries: 'fitclub_weightEntries',
 } as const;
@@ -118,6 +119,33 @@ export function deleteCustomWorkout(id: string): void {
   const existing = getCustomWorkouts();
   const filtered = existing.filter((cw) => cw.id !== id);
   localStorage.setItem(KEYS.customWorkouts, JSON.stringify(filtered));
+}
+
+export function getCustomSplits(): CustomSplit[] {
+  try {
+    const raw = localStorage.getItem(KEYS.customSplits);
+    if (raw === null) return [];
+    return JSON.parse(raw) as CustomSplit[];
+  } catch {
+    return [];
+  }
+}
+
+export function saveCustomSplit(split: CustomSplit): void {
+  const existing = getCustomSplits();
+  const idx = existing.findIndex((s) => s.id === split.id);
+  if (idx !== -1) {
+    existing[idx] = split;
+  } else {
+    existing.push(split);
+  }
+  localStorage.setItem(KEYS.customSplits, JSON.stringify(existing));
+}
+
+export function deleteCustomSplit(id: string): void {
+  const existing = getCustomSplits();
+  const filtered = existing.filter((s) => s.id !== id);
+  localStorage.setItem(KEYS.customSplits, JSON.stringify(filtered));
 }
 
 export function getProgressPhotos(): ProgressPhoto[] {

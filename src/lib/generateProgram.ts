@@ -1,13 +1,24 @@
 import type { UserProfile, Program, ProgramDay, ProgramExercise } from "../types";
 import { EXERCISE_LIBRARY } from "../data/exercises";
 import { SPLITS } from "../data/splits";
-import { getCustomWorkouts, getCustomExercises } from './storage';
+import { getCustomWorkouts, getCustomExercises, getCustomSplits } from './storage';
 
 export function generateProgram(profile: UserProfile): Program {
   if (profile.splitId === 'custom') {
-    const customWorkouts = getCustomWorkouts();
+    const customSplits = getCustomSplits();
+    const selectedSplit = profile.customSplitId
+      ? customSplits.find((s) => s.id === profile.customSplitId)
+      : undefined;
+
+    const allCustomWorkouts = getCustomWorkouts();
+    const customWorkouts = selectedSplit
+      ? selectedSplit.workoutIds
+          .map((id) => allCustomWorkouts.find((w) => w.id === id))
+          .filter((w): w is NonNullable<typeof w> => w !== undefined)
+      : allCustomWorkouts;
+
     if (customWorkouts.length === 0) {
-      throw new Error('No custom workouts found. Build a workout in the Workout Builder first.');
+      throw new Error('No custom workouts found. Build a workout (and split) in the Workout Builder first.');
     }
     const customExercises = getCustomExercises();
     const allExercises = [...EXERCISE_LIBRARY, ...customExercises];
