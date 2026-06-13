@@ -131,7 +131,7 @@
   body {
     @apply text-textPrimary font-body;
     background-color: var(--color-page-bg);
-    background-image: radial-gradient(ellipse 80% 50% at 50% -10%, color-mix(in srgb, var(--color-surface) 40%, transparent), transparent);
+    background-image: radial-gradient(ellipse 80% 60% at 50% -10%, color-mix(in srgb, var(--color-accent) 12%, var(--color-surface) 60%), transparent 70%);
     background-attachment: fixed;
     min-height: 100vh;
   }
