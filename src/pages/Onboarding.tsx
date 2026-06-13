@@ -397,7 +397,7 @@ export function Onboarding() {
             <button
               type="button"
               onClick={handleConfirmProgram}
-              className="flex-1 bg-accent hover:bg-accent/90 active:bg-accent/80 text-pageBg font-semibold rounded-xl py-3 text-sm transition-colors"
+              className="flex-1 bg-accent hover:bg-accent/90 active:bg-accent/80 text-pageBg font-semibold rounded-xl py-3 text-sm transition-colors active:scale-95 transition-transform"
             >
               Looks good, let's go!
             </button>
@@ -406,7 +406,7 @@ export function Onboarding() {
               type="button"
               onClick={handleNext}
               disabled={!canAdvance()}
-              className="flex-1 bg-accent hover:bg-accent/90 active:bg-accent/80 disabled:opacity-40 disabled:cursor-not-allowed text-pageBg font-semibold rounded-xl py-3 text-sm transition-colors"
+              className="flex-1 bg-accent hover:bg-accent/90 active:bg-accent/80 disabled:opacity-40 disabled:cursor-not-allowed text-pageBg font-semibold rounded-xl py-3 text-sm transition-colors active:scale-95 transition-transform"
             >
               {(step === 5 || (step === 4 && goal === 'sports_performance')) ? 'Preview Program' : 'Next'}
             </button>

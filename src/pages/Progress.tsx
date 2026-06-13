@@ -621,7 +621,7 @@ export function Progress() {
                     <div className="flex items-center gap-2">
                       <p className="text-base font-semibold text-textPrimary">{sessionDayName}</p>
                       {sessionIsPR && (
-                        <span className="text-xs font-semibold text-accent2 bg-accent2/10 px-2 py-0.5 rounded-full leading-tight">
+                        <span className="text-xs font-semibold text-accent2 bg-accent2/10 px-2 py-0.5 rounded-full leading-tight pr-badge-bounce">
                           🏆 PR!
                         </span>
                       )}
@@ -642,7 +642,7 @@ export function Progress() {
                           <div className="flex items-center gap-2 mb-2">
                             <p className="text-sm font-display text-textPrimary">{exerciseName}</p>
                             {isThisExercisePR && (
-                              <span className="text-xs font-semibold text-accent2 bg-accent2/10 px-2 py-0.5 rounded-full leading-tight">
+                              <span className="text-xs font-semibold text-accent2 bg-accent2/10 px-2 py-0.5 rounded-full leading-tight pr-badge-bounce">
                                 🏆 PR!
                               </span>
                             )}

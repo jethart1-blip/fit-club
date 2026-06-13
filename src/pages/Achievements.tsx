@@ -91,7 +91,7 @@ export function Achievements() {
                   a.unlocked
                     ? 'border-accent bg-accent/5 opacity-100'
                     : 'border-surface2 bg-surface2 opacity-40 grayscale'
-                }`}
+                } ${a.unlocked ? 'achievement-unlock-pulse' : ''}`}
               >
                 <p className="text-sm font-semibold text-textPrimary leading-tight">{a.label}</p>
                 <p className="text-xs text-textMuted leading-snug">{a.description}</p>

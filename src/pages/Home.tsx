@@ -179,7 +179,7 @@ export function Home() {
         <div className="grid grid-cols-2 gap-3">
 
           {/* This Week */}
-          <div className="bg-surface rounded-2xl p-4 space-y-3">
+          <div className="bg-surface rounded-2xl p-4 space-y-3 transition-transform hover:scale-[1.02]">
             <div className="flex items-center justify-between">
               <p className="text-xs font-semibold text-textMuted uppercase tracking-wide">
                 This Week
@@ -211,7 +211,7 @@ export function Home() {
           </div>
 
           {/* Streak */}
-          <div className="bg-surface rounded-2xl p-4 space-y-3">
+          <div className="bg-surface rounded-2xl p-4 space-y-3 transition-transform hover:scale-[1.02]">
             <div className="flex items-center justify-between">
               <p className="text-xs font-semibold text-textMuted uppercase tracking-wide">
                 Streak
@@ -237,7 +237,7 @@ export function Home() {
         </div>
 
         {/* Last Workout */}
-        <div className="bg-surface rounded-2xl p-5">
+        <div className="bg-surface rounded-2xl p-5 transition-transform hover:scale-[1.02]">
           <p className="text-xs font-semibold text-textMuted uppercase tracking-wide mb-3">
             Last Workout
           </p>
@@ -254,7 +254,7 @@ export function Home() {
         </div>
 
         {/* Up Next */}
-        <div className="bg-surface rounded-2xl p-5 flex items-center justify-between">
+        <div className="bg-surface rounded-2xl p-5 flex items-center justify-between transition-transform hover:scale-[1.02]">
           <div>
             <p className="text-xs font-semibold text-textMuted uppercase tracking-wide mb-1">
               Up Next
@@ -267,7 +267,7 @@ export function Home() {
         </div>
 
         {/* This Week */}
-        <div className="bg-surface rounded-2xl p-5 space-y-3">
+        <div className="bg-surface rounded-2xl p-5 space-y-3 transition-transform hover:scale-[1.02]">
           <p className="text-xs font-semibold text-textMuted uppercase tracking-wide">
             This Week
           </p>
@@ -292,7 +292,7 @@ export function Home() {
         </div>
 
         {/* Muscle Recovery */}
-        <div className="bg-surface rounded-2xl p-5 space-y-4">
+        <div className="bg-surface rounded-2xl p-5 space-y-4 transition-transform hover:scale-[1.02]">
           <p className="text-xs font-semibold text-textMuted uppercase tracking-wide">
             Muscle Recovery
           </p>
@@ -318,7 +318,7 @@ export function Home() {
         {/* Start Workout CTA */}
         <button
           onClick={() => navigate('/today?checkin=1')}
-          className="w-full bg-accent hover:bg-accent/90 active:bg-accent/80 text-pageBg font-display font-bold rounded-2xl py-5 text-xl tracking-tight transition-colors shadow-lg shadow-accent/20"
+          className="w-full bg-accent hover:bg-accent/90 active:bg-accent/80 text-pageBg font-display font-bold rounded-2xl py-5 text-xl tracking-tight transition-colors shadow-lg shadow-accent/20 active:scale-95 transition-transform"
         >
           Start Workout
         </button>

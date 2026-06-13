@@ -409,7 +409,7 @@ export function TodaysWorkout() {
                         setStretchIndex(0);
                         setStretchSecondsLeft(30);
                       }}
-                      className="flex-1 bg-accent hover:bg-accent/90 active:bg-accent/80 text-pageBg font-semibold rounded-xl py-3 text-sm transition-colors"
+                      className="flex-1 bg-accent hover:bg-accent/90 active:bg-accent/80 text-pageBg font-semibold rounded-xl py-3 text-sm transition-colors active:scale-95 transition-transform"
                     >
                       Start Cooldown
                     </button>
@@ -496,7 +496,7 @@ export function TodaysWorkout() {
               <button
                 disabled={sessionDifficulty === undefined}
                 onClick={handleSaveWorkout}
-                className="w-full bg-accent hover:bg-accent/90 active:bg-accent/80 disabled:opacity-40 disabled:cursor-not-allowed text-pageBg font-semibold rounded-xl py-3 text-sm transition-colors"
+                className="w-full bg-accent hover:bg-accent/90 active:bg-accent/80 disabled:opacity-40 disabled:cursor-not-allowed text-pageBg font-semibold rounded-xl py-3 text-sm transition-colors active:scale-95 transition-transform"
               >
                 Save Workout
               </button>
@@ -555,7 +555,7 @@ export function TodaysWorkout() {
           <button
             disabled={readiness === undefined}
             onClick={() => setCheckedIn(true)}
-            className="w-full bg-accent hover:bg-accent/90 active:bg-accent/80 disabled:opacity-40 disabled:cursor-not-allowed text-pageBg font-semibold rounded-xl py-3 text-sm transition-colors"
+            className="w-full bg-accent hover:bg-accent/90 active:bg-accent/80 disabled:opacity-40 disabled:cursor-not-allowed text-pageBg font-semibold rounded-xl py-3 text-sm transition-colors active:scale-95 transition-transform"
           >
             Continue
           </button>
@@ -581,7 +581,7 @@ export function TodaysWorkout() {
               setStartTime(Date.now());
               setWorkoutStarted(true);
             }}
-            className="w-full bg-accent hover:bg-accent/90 active:bg-accent/80 text-pageBg font-semibold rounded-xl py-3 text-sm transition-colors"
+            className="w-full bg-accent hover:bg-accent/90 active:bg-accent/80 text-pageBg font-semibold rounded-xl py-3 text-sm transition-colors active:scale-95 transition-transform"
           >
             Start Workout
           </button>
@@ -613,7 +613,7 @@ export function TodaysWorkout() {
                     setWarmupIndex(0);
                     setWarmupSecondsLeft(30);
                   }}
-                  className="flex-1 bg-accent hover:bg-accent/90 active:bg-accent/80 text-pageBg font-semibold rounded-xl py-3 text-sm transition-colors"
+                  className="flex-1 bg-accent hover:bg-accent/90 active:bg-accent/80 text-pageBg font-semibold rounded-xl py-3 text-sm transition-colors active:scale-95 transition-transform"
                 >
                   Start Warm-Up
                 </button>
@@ -1086,7 +1086,7 @@ export function TodaysWorkout() {
                         setFinisherPhase('work');
                         setFinisherSecondsLeft(30);
                       }}
-                      className="flex-1 bg-accent hover:bg-accent/90 active:bg-accent/80 text-pageBg font-semibold rounded-xl py-2.5 text-sm transition-colors"
+                      className="flex-1 bg-accent hover:bg-accent/90 active:bg-accent/80 text-pageBg font-semibold rounded-xl py-2.5 text-sm transition-colors active:scale-95 transition-transform"
                     >
                       Start Finisher
                     </button>
@@ -1115,7 +1115,7 @@ export function TodaysWorkout() {
           ) : (
             <button
               onClick={handleFinish}
-              className="w-full bg-accent hover:bg-accent/90 active:bg-accent/80 text-pageBg font-semibold rounded-xl py-3 text-sm transition-colors"
+              className="w-full bg-accent hover:bg-accent/90 active:bg-accent/80 text-pageBg font-semibold rounded-xl py-3 text-sm transition-colors active:scale-95 transition-transform"
             >
               Finish Workout
             </button>

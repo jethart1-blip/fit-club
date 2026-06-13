@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom'
+import { NavLink, useLocation } from 'react-router-dom'
 
 const navLinks = [
   { to: '/', label: '🏠 Home', end: true },
@@ -16,6 +16,7 @@ interface LayoutProps {
 }
 
 export function Layout({ children }: LayoutProps) {
+  const location = useLocation()
   return (
     <div className="min-h-screen bg-pageBg">
       <nav className="sticky top-0 z-10 bg-surface border-b border-surface2">
@@ -45,7 +46,11 @@ export function Layout({ children }: LayoutProps) {
         </div>
       </nav>
 
-      <main className="mx-auto max-w-3xl px-4 py-6">{children}</main>
+      <main className="mx-auto max-w-3xl px-4 py-6">
+        <div key={location.pathname} className="page-fade-in">
+          {children}
+        </div>
+      </main>
     </div>
   )
 }

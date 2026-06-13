@@ -2,7 +2,9 @@ import { useEffect, useRef, useState } from 'react'
 
 import { EXERCISE_LIBRARY } from '../data/exercises'
 import { SPLITS } from '../data/splits'
-import { getCustomWorkouts, getProfile, getProgram, getWorkoutLogs } from '../lib/storage'
+import { getCustomWorkouts, getCurrentDayIndex, getProfile, getProgram, getWeightEntries, getWorkoutLogs } from '../lib/storage'
+import { isDeloadWeek, isTestMaxWeek } from '../lib/getMesocycleWeek'
+import { getAllTimePR } from '../lib/getPRs'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -17,9 +19,13 @@ function buildContextSummary(): string {
 
   const lines: string[] = []
 
+  // ## User Profile
   if (profile) {
     const split = SPLITS[profile.splitId]
     lines.push('## User Profile')
+    if (profile.name) {
+      lines.push(`- Name: ${profile.name} (address them by name when natural)`)
+    }
     lines.push(`- Age: ${profile.age}`)
     lines.push(`- Weight: ${profile.weightLbs} lbs`)
     lines.push(`- Height: ${profile.heightInches} inches`)
@@ -29,6 +35,52 @@ function buildContextSummary(): string {
     lines.push(`- Days per week: ${profile.daysPerWeek}`)
   }
 
+  // ## Status
+  if (profile) {
+    lines.push('\n## Status')
+    if (isDeloadWeek(profile)) {
+      lines.push('- This is a DELOAD WEEK (reduced volume/intensity by design).')
+    }
+    if (isTestMaxWeek(profile)) {
+      lines.push('- This is a MAX TESTING WEEK — the user may be retesting their 1RM on a main lift.')
+    }
+
+    // Streak
+    const sortedLogs = [...logs].sort((a, b) => b.date.localeCompare(a.date))
+    const now = new Date()
+    now.setHours(0, 0, 0, 0)
+    let streak = 0
+    if (sortedLogs.length > 0) {
+      const uniqueDates: Date[] = []
+      const seen = new Set<string>()
+      for (const log of sortedLogs) {
+        const d = new Date(log.date)
+        const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`
+        if (!seen.has(key)) {
+          seen.add(key)
+          uniqueDates.push(new Date(d.getFullYear(), d.getMonth(), d.getDate()))
+        }
+      }
+      const diffFromToday = (now.getTime() - uniqueDates[0]?.getTime()) / (1000 * 60 * 60 * 24)
+      if (diffFromToday <= 2) {
+        streak = 1
+        for (let i = 1; i < uniqueDates.length; i++) {
+          const gap = (uniqueDates[i - 1].getTime() - uniqueDates[i].getTime()) / (1000 * 60 * 60 * 24)
+          if (gap <= 2) streak++
+          else break
+        }
+      }
+    }
+    lines.push(`- Current workout streak: ${streak} day${streak !== 1 ? 's' : ''}`)
+
+    if (program) {
+      const dayIndex = getCurrentDayIndex()
+      const nextDay = program.days[dayIndex % program.days.length]
+      lines.push(`- Next scheduled workout: ${nextDay.name}`)
+    }
+  }
+
+  // ## Recent Workouts
   const recentLogs = [...logs].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5)
   if (recentLogs.length > 0) {
     lines.push('\n## Recent Workouts (last 5)')
@@ -50,6 +102,43 @@ function buildContextSummary(): string {
     }
   }
 
+  // ## Readiness Trend
+  const readinessLogs = recentLogs.filter(l => l.readiness !== undefined)
+  if (readinessLogs.length > 0) {
+    lines.push('\n## Readiness Trend (last 5 sessions, 1-10 scale)')
+    for (const log of readinessLogs) {
+      lines.push(`- ${log.date}: ${log.readiness}/10`)
+    }
+  }
+
+  // ## Recent PRs
+  const recentPRs: string[] = []
+  for (const log of recentLogs) {
+    for (const ex of log.exercises) {
+      const pr = getAllTimePR(ex.exerciseId, logs)
+      if (!pr) continue
+      const sessionMax = Math.max(...ex.sets.map(s => s.weight))
+      if (sessionMax === pr.weight && pr.date === log.date) {
+        const def = EXERCISE_LIBRARY.find(e => e.id === ex.exerciseId)
+        recentPRs.push(`${def?.name ?? ex.exerciseId}: ${pr.weight} lbs (new all-time PR on ${log.date})`)
+      }
+    }
+  }
+  if (recentPRs.length > 0) {
+    lines.push('\n## Recent PRs')
+    for (const pr of recentPRs) lines.push(`- ${pr}`)
+  }
+
+  // ## Bodyweight Trend
+  const weightEntries = [...getWeightEntries()].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 3)
+  if (weightEntries.length > 0) {
+    lines.push('\n## Bodyweight Trend (most recent first)')
+    for (const w of weightEntries) {
+      lines.push(`- ${w.date}: ${w.weightLbs} lbs`)
+    }
+  }
+
+  // ## Custom Workouts
   if (customWorkouts.length > 0) {
     lines.push('\n## Custom Workouts')
     for (const cw of customWorkouts) {
