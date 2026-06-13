@@ -13,7 +13,7 @@ import { getSuggestedWeight } from '../lib/getSuggestedWeight';
 import { EXERCISE_LIBRARY } from '../data/exercises';
 import { MUSCLE_ILLUSTRATIONS } from '../assets/muscles';
 
-type SetInputs = { weight: string; reps: string };
+type SetInputs = { weight: string; reps: string; rpe: string };
 
 const RING_RADIUS = 38;
 const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
@@ -77,6 +77,7 @@ export function TodaysWorkout() {
       initialInputs[ex.exerciseId] = Array.from({ length: ex.targetSets }, () => ({
         weight: suggested !== null ? String(suggested) : '',
         reps: '',
+        rpe: '',
       }));
     }
 
@@ -99,7 +100,7 @@ export function TodaysWorkout() {
     return () => clearInterval(id);
   }, [restSecondsLeft]);
 
-  function updateInput(exerciseId: string, setIdx: number, field: 'weight' | 'reps', value: string) {
+  function updateInput(exerciseId: string, setIdx: number, field: 'weight' | 'reps' | 'rpe', value: string) {
     setInputs((prev) => {
       const copy = (prev[exerciseId] ?? []).map((s, i) =>
         i === setIdx ? { ...s, [field]: value } : s
@@ -139,6 +140,7 @@ export function TodaysWorkout() {
         [newId]: Array.from({ length: updatedEx.targetSets }, () => ({
           weight: suggested !== null ? String(suggested) : '',
           reps: '',
+          rpe: '',
         })),
       };
     });
@@ -153,13 +155,16 @@ export function TodaysWorkout() {
         .map((s, i) => {
           const w = parseFloat(s.weight);
           const r = parseFloat(s.reps);
+          const rpeVal = parseFloat(s.rpe);
           const hasWeight = s.weight !== '' && !isNaN(w);
           const hasReps = s.reps !== '' && !isNaN(r);
+          const hasRpe = s.rpe !== '' && !isNaN(rpeVal) && rpeVal >= 1 && rpeVal <= 10;
           if (hasWeight || hasReps) {
             return {
               setNumber: i + 1,
               weight: hasWeight ? w : 0,
               reps: hasReps ? r : 0,
+              ...(hasRpe && { rpe: rpeVal }),
             } satisfies SetEntry;
           }
           return null;
@@ -371,13 +376,14 @@ export function TodaysWorkout() {
 
             {/* Set input rows */}
             <div className="space-y-2">
-              <div className="grid grid-cols-[2rem_1fr_1fr] gap-2 text-xs font-medium text-textMuted px-1">
+              <div className="grid grid-cols-[2rem_1fr_1fr_1fr] gap-2 text-xs font-medium text-textMuted px-1">
                 <span>Set</span>
                 <span>Weight (lbs)</span>
                 <span>Reps</span>
+                <span>RPE</span>
               </div>
               {setRows.map((row, i) => (
-                <div key={i} className="grid grid-cols-[2rem_1fr_1fr] gap-2 items-center">
+                <div key={i} className="grid grid-cols-[2rem_1fr_1fr_1fr] gap-2 items-center">
                   <span className="text-sm text-textMuted text-center font-medium">{i + 1}</span>
                   <input
                     type="number"
@@ -394,6 +400,16 @@ export function TodaysWorkout() {
                     value={row.reps}
                     onChange={(e) => updateInput(exercise.exerciseId, i, 'reps', e.target.value)}
                     onBlur={() => handleRepsBlur(exercise.exerciseId, i, day.restSeconds)}
+                    className="bg-surface2 border border-surface2 rounded-lg px-3 py-2 text-sm text-textPrimary placeholder-textMuted w-full focus:outline-none focus:border-accent transition-colors"
+                  />
+                  <input
+                    type="number"
+                    min="1"
+                    max="10"
+                    step="0.5"
+                    placeholder="—"
+                    value={row.rpe}
+                    onChange={(e) => updateInput(exercise.exerciseId, i, 'rpe', e.target.value)}
                     className="bg-surface2 border border-surface2 rounded-lg px-3 py-2 text-sm text-textPrimary placeholder-textMuted w-full focus:outline-none focus:border-accent transition-colors"
                   />
                 </div>

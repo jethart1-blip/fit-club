@@ -86,6 +86,7 @@ export interface SetEntry {
   setNumber: number;
   weight: number;
   reps: number;
+  rpe?: number;
 }
 
 export interface ExerciseLog {
