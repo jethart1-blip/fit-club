@@ -12,7 +12,7 @@ export default {
         sm: 'calc(var(--radius) - 4px)',
       },
       fontFamily: {
-        display: ['Oswald', 'sans-serif'],
+        display: ['Anton', 'sans-serif'],
         body: ['Inter', 'sans-serif'],
       },
       colors: {
