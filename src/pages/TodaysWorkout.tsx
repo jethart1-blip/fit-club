@@ -57,6 +57,20 @@ export function TodaysWorkout() {
     const existingLogs = getWorkoutLogs();
     const day = p.days[idx];
 
+    const firstEx = day.exercises[0];
+    if (firstEx) {
+      console.log('[SuggestedWeight debug]', {
+        exerciseId: firstEx.exerciseId,
+        exerciseName: firstEx.exerciseId,
+        totalLogs: existingLogs.length,
+        allLoggedExerciseIds: existingLogs.flatMap(l => l.exercises.map(e => e.exerciseId)),
+        logsWithThisExercise: existingLogs.filter(l =>
+          l.exercises.some(e => e.exerciseId === firstEx.exerciseId)
+        ).length,
+        suggested: getSuggestedWeight(firstEx.exerciseId, firstEx, existingLogs),
+      });
+    }
+
     const initialInputs: Record<string, SetInputs[]> = {};
     for (const ex of day.exercises) {
       const suggested = getSuggestedWeight(ex.exerciseId, ex, existingLogs);
@@ -139,8 +153,14 @@ export function TodaysWorkout() {
         .map((s, i) => {
           const w = parseFloat(s.weight);
           const r = parseFloat(s.reps);
-          if (!isNaN(w) && !isNaN(r) && s.weight !== '' && s.reps !== '') {
-            return { setNumber: i + 1, weight: w, reps: r } satisfies SetEntry;
+          const hasWeight = s.weight !== '' && !isNaN(w);
+          const hasReps = s.reps !== '' && !isNaN(r);
+          if (hasWeight || hasReps) {
+            return {
+              setNumber: i + 1,
+              weight: hasWeight ? w : 0,
+              reps: hasReps ? r : 0,
+            } satisfies SetEntry;
           }
           return null;
         })
