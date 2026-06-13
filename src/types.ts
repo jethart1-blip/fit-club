@@ -131,3 +131,9 @@ export interface ProgressPhoto {
   dataUrl: string;
   weightLbs?: number;
 }
+
+export interface WeightEntry {
+  id: string;
+  date: string;
+  weightLbs: number;
+}

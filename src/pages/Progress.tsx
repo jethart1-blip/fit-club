@@ -1,11 +1,14 @@
 import { useState, useMemo } from 'react';
-import type { WorkoutLog, Program, ProgressPhoto } from '../types';
+import type { WorkoutLog, Program, ProgressPhoto, WeightEntry } from '../types';
 import {
   getWorkoutLogs,
   getProgram,
   getProgressPhotos,
   saveProgressPhoto,
   deleteProgressPhoto,
+  getWeightEntries,
+  saveWeightEntry,
+  deleteWeightEntry,
 } from '../lib/storage';
 import { compressImage } from '../lib/imageCompression';
 import { EXERCISE_LIBRARY } from '../data/exercises';
@@ -66,6 +69,8 @@ export function Progress() {
 
   const [photos, setPhotos] = useState<ProgressPhoto[]>(getProgressPhotos);
   const [photoWeight, setPhotoWeight] = useState('');
+  const [weightEntries, setWeightEntries] = useState<WeightEntry[]>(getWeightEntries);
+  const [newWeight, setNewWeight] = useState('');
 
   const chartData = useMemo(() => {
     if (!selectedId) return [];
@@ -199,6 +204,113 @@ export function Progress() {
                     </div>
                   ))}
               </div>
+            )}
+          </div>
+
+          {/* Bodyweight */}
+          <div className="bg-surface rounded-2xl p-6 space-y-4">
+            <h2 className="text-lg font-display text-textPrimary">Bodyweight</h2>
+
+            <div className="flex gap-2">
+              <input
+                type="number"
+                min={50}
+                max={600}
+                placeholder="lbs"
+                value={newWeight}
+                onChange={(e) => setNewWeight(e.target.value)}
+                className="flex-1 rounded-xl border border-surface2 bg-surface2 px-4 py-2.5 text-sm text-textPrimary placeholder-textMuted focus:outline-none focus:border-accent transition-colors"
+              />
+              <button
+                onClick={() => {
+                  const val = Number(newWeight);
+                  if (!newWeight || isNaN(val) || val < 50 || val > 600) return;
+                  saveWeightEntry({ id: crypto.randomUUID(), date: new Date().toISOString(), weightLbs: val });
+                  setWeightEntries(getWeightEntries());
+                  setNewWeight('');
+                }}
+                disabled={!newWeight || isNaN(Number(newWeight)) || Number(newWeight) < 50 || Number(newWeight) > 600}
+                className="px-4 py-2.5 rounded-xl text-sm font-medium bg-accent text-black disabled:opacity-40 hover:bg-accent/90 transition-colors whitespace-nowrap"
+              >
+                Log Weight
+              </button>
+            </div>
+
+            {weightEntries.length >= 2 ? (
+              <ResponsiveContainer width="100%" height={240}>
+                <LineChart
+                  data={weightEntries
+                    .slice()
+                    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+                    .map((e) => ({ date: formatDate(e.date), weightLbs: e.weightLbs }))}
+                  margin={{ top: 4, right: 8, bottom: 4, left: 0 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" stroke="#363b46" />
+                  <XAxis
+                    dataKey="date"
+                    tick={{ fontSize: 12, fill: '#9ca3af' }}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    tick={{ fontSize: 12, fill: '#9ca3af' }}
+                    axisLine={false}
+                    tickLine={false}
+                    width={48}
+                    unit=" lb"
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      borderRadius: '0.75rem',
+                      border: '1px solid #363b46',
+                      background: '#2a2e37',
+                      fontSize: '0.875rem',
+                      color: '#f1f1ef',
+                    }}
+                    labelStyle={{ color: '#9ca3af' }}
+                    formatter={(value) => [`${Number(value)} lb`, 'Weight']}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="weightLbs"
+                    stroke="#d4ff4f"
+                    strokeWidth={2}
+                    dot={{ r: 4, fill: '#d4ff4f', strokeWidth: 0 }}
+                    activeDot={{ r: 6 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <p className="text-textMuted text-sm text-center py-4">
+                Log at least 2 entries to see a trend chart.
+              </p>
+            )}
+
+            {weightEntries.length > 0 && (
+              <ul className="space-y-2">
+                {weightEntries
+                  .slice()
+                  .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                  .slice(0, 5)
+                  .map((entry) => (
+                    <li key={entry.id} className="flex items-center justify-between text-sm">
+                      <span className="text-textMuted">{formatDateLong(entry.date)}</span>
+                      <div className="flex items-center gap-3">
+                        <span className="font-medium text-textPrimary">{entry.weightLbs} lbs</span>
+                        <button
+                          onClick={() => {
+                            deleteWeightEntry(entry.id);
+                            setWeightEntries(getWeightEntries());
+                          }}
+                          className="text-xs text-danger hover:opacity-70 transition-opacity"
+                          aria-label="Delete entry"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </li>
+                  ))}
+              </ul>
             )}
           </div>
         </div>
@@ -500,6 +612,113 @@ export function Progress() {
                   </div>
                 ))}
             </div>
+          )}
+        </div>
+
+        {/* Bodyweight */}
+        <div className="bg-surface rounded-2xl p-6 space-y-4">
+          <h2 className="text-lg font-display text-textPrimary">Bodyweight</h2>
+
+          <div className="flex gap-2">
+            <input
+              type="number"
+              min={50}
+              max={600}
+              placeholder="lbs"
+              value={newWeight}
+              onChange={(e) => setNewWeight(e.target.value)}
+              className="flex-1 rounded-xl border border-surface2 bg-surface2 px-4 py-2.5 text-sm text-textPrimary placeholder-textMuted focus:outline-none focus:border-accent transition-colors"
+            />
+            <button
+              onClick={() => {
+                const val = Number(newWeight);
+                if (!newWeight || isNaN(val) || val < 50 || val > 600) return;
+                saveWeightEntry({ id: crypto.randomUUID(), date: new Date().toISOString(), weightLbs: val });
+                setWeightEntries(getWeightEntries());
+                setNewWeight('');
+              }}
+              disabled={!newWeight || isNaN(Number(newWeight)) || Number(newWeight) < 50 || Number(newWeight) > 600}
+              className="px-4 py-2.5 rounded-xl text-sm font-medium bg-accent text-black disabled:opacity-40 hover:bg-accent/90 transition-colors whitespace-nowrap"
+            >
+              Log Weight
+            </button>
+          </div>
+
+          {weightEntries.length >= 2 ? (
+            <ResponsiveContainer width="100%" height={240}>
+              <LineChart
+                data={weightEntries
+                  .slice()
+                  .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+                  .map((e) => ({ date: formatDate(e.date), weightLbs: e.weightLbs }))}
+                margin={{ top: 4, right: 8, bottom: 4, left: 0 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#363b46" />
+                <XAxis
+                  dataKey="date"
+                  tick={{ fontSize: 12, fill: '#9ca3af' }}
+                  axisLine={false}
+                  tickLine={false}
+                />
+                <YAxis
+                  tick={{ fontSize: 12, fill: '#9ca3af' }}
+                  axisLine={false}
+                  tickLine={false}
+                  width={48}
+                  unit=" lb"
+                />
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: '0.75rem',
+                    border: '1px solid #363b46',
+                    background: '#2a2e37',
+                    fontSize: '0.875rem',
+                    color: '#f1f1ef',
+                  }}
+                  labelStyle={{ color: '#9ca3af' }}
+                  formatter={(value) => [`${Number(value)} lb`, 'Weight']}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="weightLbs"
+                  stroke="#d4ff4f"
+                  strokeWidth={2}
+                  dot={{ r: 4, fill: '#d4ff4f', strokeWidth: 0 }}
+                  activeDot={{ r: 6 }}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          ) : (
+            <p className="text-textMuted text-sm text-center py-4">
+              Log at least 2 entries to see a trend chart.
+            </p>
+          )}
+
+          {weightEntries.length > 0 && (
+            <ul className="space-y-2">
+              {weightEntries
+                .slice()
+                .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                .slice(0, 5)
+                .map((entry) => (
+                  <li key={entry.id} className="flex items-center justify-between text-sm">
+                    <span className="text-textMuted">{formatDateLong(entry.date)}</span>
+                    <div className="flex items-center gap-3">
+                      <span className="font-medium text-textPrimary">{entry.weightLbs} lbs</span>
+                      <button
+                        onClick={() => {
+                          deleteWeightEntry(entry.id);
+                          setWeightEntries(getWeightEntries());
+                        }}
+                        className="text-xs text-danger hover:opacity-70 transition-opacity"
+                        aria-label="Delete entry"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </li>
+                ))}
+            </ul>
           )}
         </div>
       </div>
