@@ -1,10 +1,7 @@
 {
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
-  "framework": "vite",
-  "functions": {
-    "api/**/*.ts": {
-      "runtime": "@vercel/node"
-    }
-  }
-}
+  "framework": "vite"
+}git add .
+git commit -m "fix vercel.json - remove invalid functions runtime config"
+git push
