@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import React, { useState, useEffect } from 'react'
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd'
 import type { DropResult } from '@hello-pangea/dnd'
 import { EXERCISE_LIBRARY } from '../data/exercises'
@@ -151,6 +151,25 @@ export function WorkoutBuilder() {
 
   function removeItem(uid: string) {
     setWorkoutItems(prev => prev.filter(item => item.uid !== uid))
+  }
+
+  function toggleSuperset(index: number) {
+    setWorkoutItems((prev) => {
+      const next = [...prev]
+      const a = next[index]
+      const b = next[index + 1]
+      const linked = a.supersetGroup !== undefined && a.supersetGroup === b.supersetGroup
+      if (linked) {
+        next[index] = { ...a, supersetGroup: undefined }
+        next[index + 1] = { ...b, supersetGroup: undefined }
+      } else {
+        const maxGroup = Math.max(0, ...next.map((it) => it.supersetGroup ?? 0))
+        const groupNum = maxGroup + 1
+        next[index] = { ...a, supersetGroup: groupNum }
+        next[index + 1] = { ...b, supersetGroup: groupNum }
+      }
+      return next
+    })
   }
 
   // ─── Custom exercise form ────────────────────────────────────────────────────
@@ -444,81 +463,97 @@ export function WorkoutBuilder() {
                   )}
 
                   {workoutItems.map((item, index) => (
-                    <Draggable key={item.uid} draggableId={item.uid} index={index}>
-                      {(provided, snapshot) => (
-                        <div
-                          ref={provided.innerRef}
-                          {...provided.draggableProps}
-                          className={`bg-surface2 rounded-xl p-3 space-y-2.5 transition-shadow ${
-                            snapshot.isDragging ? 'shadow-xl ring-1 ring-accent/30' : ''
+                    <React.Fragment key={item.uid}>
+                      <Draggable draggableId={item.uid} index={index}>
+                        {(provided, snapshot) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            className={`bg-surface2 rounded-xl p-3 space-y-2.5 transition-shadow ${
+                              snapshot.isDragging ? 'shadow-xl ring-1 ring-accent/30' : ''
+                            }`}
+                          >
+                            {/* Exercise name row */}
+                            <div className="flex items-center gap-2">
+                              <span
+                                {...provided.dragHandleProps}
+                                className="text-textMuted opacity-40 text-sm cursor-grab active:cursor-grabbing shrink-0"
+                              >
+                                ⠿
+                              </span>
+                              <span className="flex-1 text-sm font-medium text-textPrimary leading-tight">
+                                {getExerciseName(item.exerciseId)}
+                              </span>
+                              <button
+                                onClick={() => removeItem(item.uid)}
+                                aria-label="Remove exercise"
+                                className="text-textMuted hover:text-red-400 shrink-0 w-5 h-5 flex items-center justify-center rounded text-xs font-bold transition-colors"
+                              >
+                                ✕
+                              </button>
+                            </div>
+
+                            {/* Sets / Reps row */}
+                            <div className="flex items-center gap-3 flex-wrap">
+                              {/* Sets */}
+                              <label className="flex items-center gap-1.5 text-xs text-textMuted">
+                                <span>Sets</span>
+                                <input
+                                  type="number"
+                                  min={1}
+                                  max={20}
+                                  value={item.targetSets}
+                                  onChange={e =>
+                                    updateItem(item.uid, 'targetSets', Math.max(1, parseInt(e.target.value) || 1))
+                                  }
+                                  className="w-12 bg-pageBg border border-surface2 rounded-lg px-1.5 py-1 text-textPrimary text-xs text-center focus:outline-none focus:border-accent transition-colors"
+                                />
+                              </label>
+
+                              {/* Rep range */}
+                              <label className="flex items-center gap-1.5 text-xs text-textMuted">
+                                <span>Reps</span>
+                                <input
+                                  type="number"
+                                  min={1}
+                                  max={100}
+                                  value={item.targetRepsMin}
+                                  onChange={e =>
+                                    updateItem(item.uid, 'targetRepsMin', Math.max(1, parseInt(e.target.value) || 1))
+                                  }
+                                  className="w-12 bg-pageBg border border-surface2 rounded-lg px-1.5 py-1 text-textPrimary text-xs text-center focus:outline-none focus:border-accent transition-colors"
+                                />
+                                <span className="text-textMuted opacity-50">–</span>
+                                <input
+                                  type="number"
+                                  min={1}
+                                  max={100}
+                                  value={item.targetRepsMax}
+                                  onChange={e =>
+                                    updateItem(item.uid, 'targetRepsMax', Math.max(1, parseInt(e.target.value) || 1))
+                                  }
+                                  className="w-12 bg-pageBg border border-surface2 rounded-lg px-1.5 py-1 text-textPrimary text-xs text-center focus:outline-none focus:border-accent transition-colors"
+                                />
+                              </label>
+                            </div>
+                          </div>
+                        )}
+                      </Draggable>
+                      {index < workoutItems.length - 1 && (
+                        <button
+                          onClick={() => toggleSuperset(index)}
+                          className={`w-full text-center text-xs font-semibold py-1 rounded-lg transition-colors ${
+                            workoutItems[index].supersetGroup !== undefined && workoutItems[index].supersetGroup === workoutItems[index + 1].supersetGroup
+                              ? 'text-accent bg-accent/10'
+                              : 'text-textMuted hover:text-textPrimary hover:bg-surface2'
                           }`}
                         >
-                          {/* Exercise name row */}
-                          <div className="flex items-center gap-2">
-                            <span
-                              {...provided.dragHandleProps}
-                              className="text-textMuted opacity-40 text-sm cursor-grab active:cursor-grabbing shrink-0"
-                            >
-                              ⠿
-                            </span>
-                            <span className="flex-1 text-sm font-medium text-textPrimary leading-tight">
-                              {getExerciseName(item.exerciseId)}
-                            </span>
-                            <button
-                              onClick={() => removeItem(item.uid)}
-                              aria-label="Remove exercise"
-                              className="text-textMuted hover:text-red-400 shrink-0 w-5 h-5 flex items-center justify-center rounded text-xs font-bold transition-colors"
-                            >
-                              ✕
-                            </button>
-                          </div>
-
-                          {/* Sets / Reps row */}
-                          <div className="flex items-center gap-3 flex-wrap">
-                            {/* Sets */}
-                            <label className="flex items-center gap-1.5 text-xs text-textMuted">
-                              <span>Sets</span>
-                              <input
-                                type="number"
-                                min={1}
-                                max={20}
-                                value={item.targetSets}
-                                onChange={e =>
-                                  updateItem(item.uid, 'targetSets', Math.max(1, parseInt(e.target.value) || 1))
-                                }
-                                className="w-12 bg-pageBg border border-surface2 rounded-lg px-1.5 py-1 text-textPrimary text-xs text-center focus:outline-none focus:border-accent transition-colors"
-                              />
-                            </label>
-
-                            {/* Rep range */}
-                            <label className="flex items-center gap-1.5 text-xs text-textMuted">
-                              <span>Reps</span>
-                              <input
-                                type="number"
-                                min={1}
-                                max={100}
-                                value={item.targetRepsMin}
-                                onChange={e =>
-                                  updateItem(item.uid, 'targetRepsMin', Math.max(1, parseInt(e.target.value) || 1))
-                                }
-                                className="w-12 bg-pageBg border border-surface2 rounded-lg px-1.5 py-1 text-textPrimary text-xs text-center focus:outline-none focus:border-accent transition-colors"
-                              />
-                              <span className="text-textMuted opacity-50">–</span>
-                              <input
-                                type="number"
-                                min={1}
-                                max={100}
-                                value={item.targetRepsMax}
-                                onChange={e =>
-                                  updateItem(item.uid, 'targetRepsMax', Math.max(1, parseInt(e.target.value) || 1))
-                                }
-                                className="w-12 bg-pageBg border border-surface2 rounded-lg px-1.5 py-1 text-textPrimary text-xs text-center focus:outline-none focus:border-accent transition-colors"
-                              />
-                            </label>
-                          </div>
-                        </div>
+                          {workoutItems[index].supersetGroup !== undefined && workoutItems[index].supersetGroup === workoutItems[index + 1].supersetGroup
+                            ? '🔗 Linked as superset (tap to unlink)'
+                            : '🔗 Link with next as superset'}
+                        </button>
                       )}
-                    </Draggable>
+                    </React.Fragment>
                   ))}
 
                   {provided.placeholder}

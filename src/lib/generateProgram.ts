@@ -46,6 +46,7 @@ export function generateProgram(profile: UserProfile): Program {
           targetSets: item.targetSets,
           targetRepsMin: item.targetRepsMin,
           targetRepsMax: item.targetRepsMax,
+          supersetGroup: item.supersetGroup,
         };
       });
       return {

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import type { Program, WorkoutLog, ExerciseLog, SetEntry, ProgramExercise } from '../types';
 import {
@@ -49,6 +49,28 @@ export function TodaysWorkout() {
   const [logs, setLogs] = useState<WorkoutLog[]>([]);
   const [exercises, setExercises] = useState<ProgramExercise[]>([]);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
+
+  const slideGroups = useMemo(() => {
+    const groups: ProgramExercise[][] = [];
+    let i = 0;
+    while (i < exercises.length) {
+      const ex = exercises[i];
+      if (ex.supersetGroup !== undefined) {
+        const group = [ex];
+        let j = i + 1;
+        while (j < exercises.length && exercises[j].supersetGroup === ex.supersetGroup) {
+          group.push(exercises[j]);
+          j++;
+        }
+        groups.push(group);
+        i = j;
+      } else {
+        groups.push([ex]);
+        i++;
+      }
+    }
+    return groups;
+  }, [exercises]);
   const [inputs, setInputs] = useState<Record<string, SetInputs[]>>({});
   const [suggestedWeights, setSuggestedWeights] = useState<Record<string, number | null>>({});
   const [restSecondsLeft, setRestSecondsLeft] = useState<number | null>(null);
@@ -156,9 +178,9 @@ export function TodaysWorkout() {
     });
   }
 
-  function handleRepsBlur(exerciseId: string, setIdx: number, restSeconds: number) {
+  function handleRepsBlur(exerciseId: string, setIdx: number, restSeconds: number, isLastInGroup: boolean) {
     const row = inputs[exerciseId]?.[setIdx];
-    if (row && row.reps !== '') {
+    if (row && row.reps !== '' && isLastInGroup) {
       setRestTotalSeconds(restSeconds);
       setRestSecondsLeft(restSeconds);
     }
@@ -429,14 +451,7 @@ export function TodaysWorkout() {
     );
   }
 
-  const exercise = exercises[currentSlideIndex];
-  const exDef = EXERCISE_LIBRARY.find((e) => e.id === exercise.exerciseId);
-  const exName = exDef?.name ?? exercise.exerciseId;
-  const setRows = inputs[exercise.exerciseId] ?? [];
-  const hasAlternatives = exercise.alternativeExerciseIds.length > 0;
-  const adjustedTargetSets = deloadWeek
-    ? Math.max(1, exercise.targetSets - 1)
-    : exercise.targetSets;
+  const currentGroup = slideGroups[currentSlideIndex] ?? [];
 
   // Ring progress: full at start, depletes to empty
   const ringProgress = restTotalSeconds > 0 && restSecondsLeft !== null
@@ -450,7 +465,7 @@ export function TodaysWorkout() {
       <div className="bg-surface border-b border-surface2 px-4 py-3 flex items-center justify-between">
         <div>
           <p className="text-xs text-textMuted uppercase tracking-wide font-medium">
-            Exercise {currentSlideIndex + 1} of {exercises.length}
+            Exercise {currentSlideIndex + 1} of {slideGroups.length}
           </p>
           <h1 className="text-lg font-display text-textPrimary">{day.name}</h1>
           {deloadWeek && (
@@ -460,7 +475,7 @@ export function TodaysWorkout() {
           )}
         </div>
         <div className="flex items-center gap-1.5">
-          {exercises.map((_, i) => (
+          {slideGroups.map((_, i) => (
             <button
               key={i}
               onClick={() => setCurrentSlideIndex(i)}
@@ -525,96 +540,113 @@ export function TodaysWorkout() {
       <div className="flex-1 overflow-y-auto p-4">
         <div className="max-w-lg mx-auto space-y-4">
           <div className="bg-surface rounded-2xl p-5 space-y-5">
-            <div
-              className="w-24 h-24 mx-auto [&>svg]:w-full [&>svg]:h-full"
-              // eslint-disable-next-line react/no-danger
-              dangerouslySetInnerHTML={{ __html: MUSCLE_ILLUSTRATIONS[exercise.slot] }}
-              role="img"
-              aria-label={exercise.slot}
-            />
+            {currentGroup.length > 1 && (
+              <p className="text-xs font-semibold text-accent uppercase tracking-wide">⚡ Superset</p>
+            )}
+            {currentGroup.map((exercise, groupIdx) => {
+              const exDef = EXERCISE_LIBRARY.find((e) => e.id === exercise.exerciseId);
+              const exName = exDef?.name ?? exercise.exerciseId;
+              const setRows = inputs[exercise.exerciseId] ?? [];
+              const hasAlternatives = exercise.alternativeExerciseIds.length > 0;
+              const adjustedTargetSets = deloadWeek
+                ? Math.max(1, exercise.targetSets - 1)
+                : exercise.targetSets;
+              const isLastInGroup = groupIdx === currentGroup.length - 1;
+              return (
+                <div key={exercise.exerciseId} className={currentGroup.length > 1 && groupIdx > 0 ? 'pt-4 border-t border-surface2' : ''}>
+                  <div
+                    className={`mx-auto [&>svg]:w-full [&>svg]:h-full ${currentGroup.length > 1 ? 'w-16 h-16' : 'w-24 h-24'}`}
+                    // eslint-disable-next-line react/no-danger
+                    dangerouslySetInnerHTML={{ __html: MUSCLE_ILLUSTRATIONS[exercise.slot] }}
+                    role="img"
+                    aria-label={exercise.slot}
+                  />
 
-            {/* Exercise name + swap */}
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <h2 className="text-xl font-display text-textPrimary leading-tight">{exName}</h2>
-                <p className="text-sm text-textMuted mt-1">
-                  {adjustedTargetSets} sets &times; {exercise.targetRepsMin}–{exercise.targetRepsMax}{' '}
-                  reps
-                </p>
-                {suggestedWeights[exercise.exerciseId] !== null &&
-                  suggestedWeights[exercise.exerciseId] !== undefined && (
-                  <p className="text-xs text-accent mt-0.5">
-                    Suggested: {suggestedWeights[exercise.exerciseId]} lbs
-                  </p>
-                )}
-              </div>
-              <div className="shrink-0 flex flex-col gap-1.5">
-                <a
-                  href={`https://www.youtube.com/results?search_query=${encodeURIComponent(exName + ' exercise form')}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center gap-1 text-sm text-textMuted border border-surface2 rounded-lg px-3 py-1.5 hover:bg-surface2 hover:text-textPrimary active:bg-surface2/80 transition-colors"
-                >
-                  <span>▶</span>
-                  <span>Demo</span>
-                </a>
-                {hasAlternatives && (
-                  <button
-                    onClick={() => handleSwap(exercise, day.id)}
-                    className="flex items-center gap-1 text-sm text-accent border border-surface2 rounded-lg px-3 py-1.5 hover:bg-surface2 active:bg-surface2/80 transition-colors"
-                  >
-                    <span>↔</span>
-                    <span>Swap</span>
-                  </button>
-                )}
-              </div>
-            </div>
+                  {/* Exercise name + swap */}
+                  <div className="flex items-start justify-between gap-3 mt-3">
+                    <div>
+                      <h2 className="text-xl font-display text-textPrimary leading-tight">{exName}</h2>
+                      <p className="text-sm text-textMuted mt-1">
+                        {adjustedTargetSets} sets &times; {exercise.targetRepsMin}–{exercise.targetRepsMax}{' '}
+                        reps
+                      </p>
+                      {suggestedWeights[exercise.exerciseId] !== null &&
+                        suggestedWeights[exercise.exerciseId] !== undefined && (
+                        <p className="text-xs text-accent mt-0.5">
+                          Suggested: {suggestedWeights[exercise.exerciseId]} lbs
+                        </p>
+                      )}
+                    </div>
+                    <div className="shrink-0 flex flex-col gap-1.5">
+                      <a
+                        href={`https://www.youtube.com/results?search_query=${encodeURIComponent(exName + ' exercise form')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 text-sm text-textMuted border border-surface2 rounded-lg px-3 py-1.5 hover:bg-surface2 hover:text-textPrimary active:bg-surface2/80 transition-colors"
+                      >
+                        <span>▶</span>
+                        <span>Demo</span>
+                      </a>
+                      {hasAlternatives && (
+                        <button
+                          onClick={() => handleSwap(exercise, day.id)}
+                          className="flex items-center gap-1 text-sm text-accent border border-surface2 rounded-lg px-3 py-1.5 hover:bg-surface2 active:bg-surface2/80 transition-colors"
+                        >
+                          <span>↔</span>
+                          <span>Swap</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
 
-            {/* Set input rows */}
-            <div className="space-y-2">
-              <div className="grid grid-cols-[2rem_1fr_1fr_1fr] gap-2 text-xs font-medium text-textMuted px-1">
-                <span>Set</span>
-                <span>Weight (lbs)</span>
-                <span>Reps</span>
-                <span>RPE</span>
-              </div>
-              {setRows.slice(0, adjustedTargetSets).map((row, i) => (
-                <div key={i} className="grid grid-cols-[2rem_1fr_1fr_1fr] gap-2 items-center">
-                  <span className="text-sm text-textMuted text-center font-medium">{i + 1}</span>
-                  <input
-                    type="number"
-                    min="0"
-                    placeholder="0"
-                    value={row.weight}
-                    onChange={(e) => updateInput(exercise.exerciseId, i, 'weight', e.target.value)}
-                    className="bg-surface2 border border-surface2 rounded-lg px-3 py-2 text-sm text-textPrimary placeholder-textMuted w-full focus:outline-none focus:border-accent transition-colors"
-                  />
-                  <input
-                    type="number"
-                    min="0"
-                    placeholder="0"
-                    value={row.reps}
-                    onChange={(e) => updateInput(exercise.exerciseId, i, 'reps', e.target.value)}
-                    onBlur={() => handleRepsBlur(exercise.exerciseId, i, day.restSeconds)}
-                    className="bg-surface2 border border-surface2 rounded-lg px-3 py-2 text-sm text-textPrimary placeholder-textMuted w-full focus:outline-none focus:border-accent transition-colors"
-                  />
-                  <input
-                    type="number"
-                    min="1"
-                    max="10"
-                    step="0.5"
-                    placeholder="—"
-                    value={row.rpe}
-                    onChange={(e) => updateInput(exercise.exerciseId, i, 'rpe', e.target.value)}
-                    className="bg-surface2 border border-surface2 rounded-lg px-3 py-2 text-sm text-textPrimary placeholder-textMuted w-full focus:outline-none focus:border-accent transition-colors"
-                  />
+                  {/* Set input rows */}
+                  <div className="space-y-2 mt-3">
+                    <div className="grid grid-cols-[2rem_1fr_1fr_1fr] gap-2 text-xs font-medium text-textMuted px-1">
+                      <span>Set</span>
+                      <span>Weight (lbs)</span>
+                      <span>Reps</span>
+                      <span>RPE</span>
+                    </div>
+                    {setRows.slice(0, adjustedTargetSets).map((row, i) => (
+                      <div key={i} className="grid grid-cols-[2rem_1fr_1fr_1fr] gap-2 items-center">
+                        <span className="text-sm text-textMuted text-center font-medium">{i + 1}</span>
+                        <input
+                          type="number"
+                          min="0"
+                          placeholder="0"
+                          value={row.weight}
+                          onChange={(e) => updateInput(exercise.exerciseId, i, 'weight', e.target.value)}
+                          className="bg-surface2 border border-surface2 rounded-lg px-3 py-2 text-sm text-textPrimary placeholder-textMuted w-full focus:outline-none focus:border-accent transition-colors"
+                        />
+                        <input
+                          type="number"
+                          min="0"
+                          placeholder="0"
+                          value={row.reps}
+                          onChange={(e) => updateInput(exercise.exerciseId, i, 'reps', e.target.value)}
+                          onBlur={() => handleRepsBlur(exercise.exerciseId, i, day.restSeconds, isLastInGroup)}
+                          className="bg-surface2 border border-surface2 rounded-lg px-3 py-2 text-sm text-textPrimary placeholder-textMuted w-full focus:outline-none focus:border-accent transition-colors"
+                        />
+                        <input
+                          type="number"
+                          min="1"
+                          max="10"
+                          step="0.5"
+                          placeholder="—"
+                          value={row.rpe}
+                          onChange={(e) => updateInput(exercise.exerciseId, i, 'rpe', e.target.value)}
+                          className="bg-surface2 border border-surface2 rounded-lg px-3 py-2 text-sm text-textPrimary placeholder-textMuted w-full focus:outline-none focus:border-accent transition-colors"
+                        />
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              ))}
-            </div>
+              );
+            })}
           </div>
 
           {/* Finisher card – last slide only, not after save */}
-          {currentSlideIndex === exercises.length - 1 && !saved && (() => {
+          {currentSlideIndex === slideGroups.length - 1 && !saved && (() => {
             const finisherComplete = !finisherStarted && finisherSecondsLeft === null && finisherRound >= 3 && finisherPhase === 'work';
             if (finisherComplete) {
               return (
@@ -739,8 +771,8 @@ export function TodaysWorkout() {
               ← Prev
             </button>
             <button
-              onClick={() => setCurrentSlideIndex((i) => Math.min(exercises.length - 1, i + 1))}
-              disabled={currentSlideIndex === exercises.length - 1}
+              onClick={() => setCurrentSlideIndex((i) => Math.min(slideGroups.length - 1, i + 1))}
+              disabled={currentSlideIndex === slideGroups.length - 1}
               className="flex-1 bg-surface2 hover:bg-surface2/80 disabled:opacity-40 disabled:cursor-not-allowed text-textPrimary font-medium rounded-xl py-2.5 text-sm transition-colors"
             >
               Next →

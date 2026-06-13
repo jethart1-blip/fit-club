@@ -75,6 +75,7 @@ export interface ProgramExercise {
   targetSets: number;
   targetRepsMin: number;
   targetRepsMax: number;
+  supersetGroup?: number;
 }
 
 export interface ProgramDay {
@@ -126,6 +127,7 @@ export interface CustomWorkoutExercise {
   targetSets: number;
   targetRepsMin: number;
   targetRepsMax: number;
+  supersetGroup?: number;
 }
 
 export interface CustomWorkout {
