@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import type { Program, WorkoutLog, ExerciseLog, SetEntry, ProgramExercise } from '../types';
 import {
   getProgram,
+  getProfile,
   getWorkoutLogs,
   saveWorkoutLog,
   getCurrentDayIndex,
@@ -10,6 +11,7 @@ import {
   swapExercise,
 } from '../lib/storage';
 import { getSuggestedWeight } from '../lib/getSuggestedWeight';
+import { isDeloadWeek } from '../lib/getMesocycleWeek';
 import { EXERCISE_LIBRARY } from '../data/exercises';
 import { MUSCLE_ILLUSTRATIONS } from '../assets/muscles';
 import { FINISHERS } from '../data/finishers';
@@ -59,6 +61,7 @@ export function TodaysWorkout() {
   const [finisherPhase, setFinisherPhase] = useState<'work' | 'rest'>('work');
   const [finisherSecondsLeft, setFinisherSecondsLeft] = useState<number | null>(null);
   const [finisherDeclined, setFinisherDeclined] = useState(false);
+  const [deloadWeek, setDeloadWeek] = useState(false);
 
   useEffect(() => {
     const p = getProgram();
@@ -72,10 +75,17 @@ export function TodaysWorkout() {
     const existingLogs = getWorkoutLogs();
     const day = p.days[idx];
 
+    const profile = getProfile();
+    const isDeload = profile ? isDeloadWeek(profile) : false;
+    setDeloadWeek(isDeload);
+
     const initialInputs: Record<string, SetInputs[]> = {};
     const initialSuggestedWeights: Record<string, number | null> = {};
     for (const ex of day.exercises) {
-      const suggested = getSuggestedWeight(ex.exerciseId, ex, existingLogs);
+      const rawSuggested = getSuggestedWeight(ex.exerciseId, ex, existingLogs);
+      const suggested = isDeload && rawSuggested !== null
+        ? Math.round(rawSuggested * 0.85)
+        : rawSuggested;
       initialSuggestedWeights[ex.exerciseId] = suggested;
       initialInputs[ex.exerciseId] = Array.from({ length: ex.targetSets }, () => ({
         weight: suggested !== null ? String(suggested) : '',
@@ -166,7 +176,10 @@ export function TodaysWorkout() {
 
     const updatedEx = updatedDay.exercises.find((e) => e.slot === ex.slot);
     if (updatedEx) {
-      const suggested = getSuggestedWeight(newId, updatedEx, logs);
+      const rawSuggested = getSuggestedWeight(newId, updatedEx, logs);
+      const suggested = deloadWeek && rawSuggested !== null
+        ? Math.round(rawSuggested * 0.85)
+        : rawSuggested;
       setSuggestedWeights((prev) => ({ ...prev, [newId]: suggested }));
       setInputs((prev) => {
         if (prev[newId]) return prev;
@@ -418,6 +431,9 @@ export function TodaysWorkout() {
   const exName = exDef?.name ?? exercise.exerciseId;
   const setRows = inputs[exercise.exerciseId] ?? [];
   const hasAlternatives = exercise.alternativeExerciseIds.length > 0;
+  const adjustedTargetSets = deloadWeek
+    ? Math.max(1, exercise.targetSets - 1)
+    : exercise.targetSets;
 
   // Ring progress: full at start, depletes to empty
   const ringProgress = restTotalSeconds > 0 && restSecondsLeft !== null
@@ -434,6 +450,11 @@ export function TodaysWorkout() {
             Exercise {currentSlideIndex + 1} of {exercises.length}
           </p>
           <h1 className="text-lg font-display text-textPrimary">{day.name}</h1>
+          {deloadWeek && (
+            <span className="inline-block mt-1 text-xs font-semibold text-accent2 bg-accent2/10 px-2 py-0.5 rounded-full">
+              Deload Week — reduced volume
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-1.5">
           {exercises.map((_, i) => (
@@ -514,7 +535,7 @@ export function TodaysWorkout() {
               <div>
                 <h2 className="text-xl font-display text-textPrimary leading-tight">{exName}</h2>
                 <p className="text-sm text-textMuted mt-1">
-                  {exercise.targetSets} sets &times; {exercise.targetRepsMin}–{exercise.targetRepsMax}{' '}
+                  {adjustedTargetSets} sets &times; {exercise.targetRepsMin}–{exercise.targetRepsMax}{' '}
                   reps
                 </p>
                 {suggestedWeights[exercise.exerciseId] !== null &&
@@ -554,7 +575,7 @@ export function TodaysWorkout() {
                 <span>Reps</span>
                 <span>RPE</span>
               </div>
-              {setRows.map((row, i) => (
+              {setRows.slice(0, adjustedTargetSets).map((row, i) => (
                 <div key={i} className="grid grid-cols-[2rem_1fr_1fr_1fr] gap-2 items-center">
                   <span className="text-sm text-textMuted text-center font-medium">{i + 1}</span>
                   <input

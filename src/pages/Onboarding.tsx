@@ -87,6 +87,7 @@ export function Onboarding() {
   }
 
   function handleSubmit() {
+    const now = new Date().toISOString();
     const profile: UserProfile = {
       age: Number(age),
       weightLbs: Number(weightLbs),
@@ -95,7 +96,8 @@ export function Onboarding() {
       equipment,
       goal: goal as Goal,
       splitId: splitId as SplitId,
-      createdAt: new Date().toISOString(),
+      createdAt: now,
+      programStartDate: now,
     };
     const result = generateProgram(profile);
     saveProfile(profile);

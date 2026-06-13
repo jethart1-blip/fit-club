@@ -35,6 +35,7 @@ export type SplitId =
   | "strength_athlete";
 
 export interface UserProfile {
+  name?: string;
   daysPerWeek: number;
   equipment: EquipmentType[];
   age: number;
@@ -43,6 +44,7 @@ export interface UserProfile {
   goal: Goal;
   splitId: SplitId;
   createdAt: string;
+  programStartDate?: string;
 }
 
 export interface DayTemplate {
