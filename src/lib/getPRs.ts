@@ -6,6 +6,34 @@ const ALL_MUSCLE_GROUPS: MuscleGroupSlot[] = [
   'quads', 'hamstrings', 'glutes', 'calves', 'abs', 'forearms',
 ];
 
+export function getDaysSinceLastTrained(
+  logs: WorkoutLog[],
+): Record<MuscleGroupSlot, number | null> {
+  const result = Object.fromEntries(
+    ALL_MUSCLE_GROUPS.map((g) => [g, null]),
+  ) as Record<MuscleGroupSlot, number | null>;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  for (const log of logs) {
+    const logDate = new Date(log.date);
+    logDate.setHours(0, 0, 0, 0);
+    const days = Math.floor((today.getTime() - logDate.getTime()) / (1000 * 60 * 60 * 24));
+
+    for (const exLog of log.exercises) {
+      const exercise = EXERCISE_LIBRARY.find((e) => e.id === exLog.exerciseId);
+      if (!exercise) continue;
+      const slot = exercise.slot;
+      if (result[slot] === null || days < result[slot]!) {
+        result[slot] = days;
+      }
+    }
+  }
+
+  return result;
+}
+
 export function getAllTimePR(
   exerciseId: string,
   logs: WorkoutLog[],

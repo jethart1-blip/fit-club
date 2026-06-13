@@ -1,8 +1,39 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { UserProfile, Program, WorkoutLog } from '../types';
+import type { UserProfile, Program, WorkoutLog, MuscleGroupSlot } from '../types';
 import { getProfile, getProgram, getWorkoutLogs, getCurrentDayIndex } from '../lib/storage';
 import { SPLITS } from '../data/splits';
+import { getDaysSinceLastTrained } from '../lib/getPRs';
+
+const MUSCLE_NAMES: Record<MuscleGroupSlot, string> = {
+  chest: 'Chest',
+  back: 'Back',
+  shoulders: 'Shoulders',
+  biceps: 'Biceps',
+  triceps: 'Triceps',
+  quads: 'Quads',
+  hamstrings: 'Hams',
+  glutes: 'Glutes',
+  calves: 'Calves',
+  abs: 'Abs',
+  forearms: 'Forearms',
+};
+
+const ALL_MUSCLE_GROUPS: MuscleGroupSlot[] = [
+  'chest', 'back', 'shoulders', 'biceps', 'triceps',
+  'quads', 'hamstrings', 'glutes', 'calves', 'abs', 'forearms',
+];
+
+function getMuscleColor(days: number | null): string {
+  if (days === null || days >= 5) return 'bg-surface2 text-textMuted';
+  if (days <= 1) return 'bg-red-500/20 text-red-400';
+  return 'bg-accent/20 text-accent';
+}
+
+function formatMuscleDays(days: number | null): string {
+  if (days === null) return '-';
+  return `${days}d`;
+}
 
 function getGreeting(): string {
   const hour = new Date().getHours();
@@ -113,6 +144,7 @@ export function Home() {
 
   const dayIndex = getCurrentDayIndex();
   const nextDay = program.days[dayIndex % program.days.length];
+  const muscleRecovery = getDaysSinceLastTrained(logs);
 
   return (
     <div className="min-h-screen bg-pageBg">
@@ -209,6 +241,30 @@ export function Home() {
           <div className="w-9 h-9 rounded-full bg-accent/10 flex items-center justify-center text-accent text-lg">
             ▶
           </div>
+        </div>
+
+        {/* Muscle Recovery */}
+        <div className="bg-surface rounded-2xl p-5 space-y-4">
+          <p className="text-xs font-semibold text-textMuted uppercase tracking-wide">
+            Muscle Recovery
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {ALL_MUSCLE_GROUPS.map((slot) => {
+              const days = muscleRecovery[slot];
+              return (
+                <span
+                  key={slot}
+                  className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-semibold ${getMuscleColor(days)}`}
+                >
+                  {MUSCLE_NAMES[slot]}
+                  <span className="opacity-70">{formatMuscleDays(days)}</span>
+                </span>
+              );
+            })}
+          </div>
+          <p className="text-xs text-textMuted">
+            🔴 Recovering · 🟢 Ready · ⚪ Not recently trained
+          </p>
         </div>
 
         {/* Start Workout CTA */}
