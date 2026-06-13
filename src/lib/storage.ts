@@ -11,6 +11,7 @@ const KEYS = {
   progressPhotos: 'fitclub_progressPhotos',
   weightEntries: 'fitclub_weightEntries',
   bodyMeasurements: 'fitclub_bodyMeasurements',
+  exerciseNotes: 'fitclub_exerciseNotes',
 } as const;
 
 export function getProfile(): UserProfile | null {
@@ -213,6 +214,26 @@ export function deleteBodyMeasurement(id: string): void {
   const existing = getBodyMeasurements();
   const filtered = existing.filter((e) => e.id !== id);
   localStorage.setItem(KEYS.bodyMeasurements, JSON.stringify(filtered));
+}
+
+export function getExerciseNotes(): Record<string, string> {
+  try {
+    const raw = localStorage.getItem(KEYS.exerciseNotes);
+    if (raw === null) return {};
+    return JSON.parse(raw) as Record<string, string>;
+  } catch {
+    return {};
+  }
+}
+
+export function saveExerciseNote(exerciseId: string, note: string): void {
+  const existing = getExerciseNotes();
+  if (note.trim() === '') {
+    delete existing[exerciseId];
+  } else {
+    existing[exerciseId] = note;
+  }
+  localStorage.setItem(KEYS.exerciseNotes, JSON.stringify(existing));
 }
 
 export function swapExercise(dayId: string, slot: MuscleGroupSlot, newExerciseId: string): void {

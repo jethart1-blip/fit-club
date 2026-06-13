@@ -9,6 +9,8 @@ import {
   getCurrentDayIndex,
   setCurrentDayIndex,
   swapExercise,
+  getExerciseNotes,
+  saveExerciseNote,
 } from '../lib/storage';
 import { getSuggestedWeight } from '../lib/getSuggestedWeight';
 import { isDeloadWeek } from '../lib/getMesocycleWeek';
@@ -107,6 +109,9 @@ export function TodaysWorkout() {
   const [finisherDeclined, setFinisherDeclined] = useState(false);
   const [deloadWeek, setDeloadWeek] = useState(false);
 
+  const [exerciseNotes, setExerciseNotes] = useState<Record<string, string>>({});
+  const [expandedNotes, setExpandedNotes] = useState<string | null>(null);
+
   useEffect(() => {
     const p = getProgram();
     if (!p) {
@@ -146,6 +151,7 @@ export function TodaysWorkout() {
     setInputs(initialInputs);
     setSuggestedWeights(initialSuggestedWeights);
     setFinisher(FINISHERS[Math.floor(Math.random() * FINISHERS.length)]);
+    setExerciseNotes(getExerciseNotes());
   }, [navigate]);
 
   // Warmup timer countdown
@@ -812,6 +818,14 @@ export function TodaysWorkout() {
                           <span>Swap</span>
                         </button>
                       )}
+                      <button
+                        onClick={() => setExpandedNotes((prev) => prev === exercise.exerciseId ? null : exercise.exerciseId)}
+                        className="flex items-center gap-1 text-sm text-textMuted border border-surface2 rounded-lg px-3 py-1.5 hover:bg-surface2 hover:text-textPrimary active:bg-surface2/80 transition-colors"
+                      >
+                        <span>📝</span>
+                        <span>Notes</span>
+                        {exerciseNotes[exercise.exerciseId] && <span className="w-1.5 h-1.5 rounded-full bg-accent" />}
+                      </button>
                     </div>
                   </div>
 
@@ -854,6 +868,21 @@ export function TodaysWorkout() {
                       </div>
                     );
                   })()}
+
+                  {expandedNotes === exercise.exerciseId && (
+                    <div className="space-y-2 mt-3">
+                      <textarea
+                        defaultValue={exerciseNotes[exercise.exerciseId] ?? ''}
+                        onBlur={(e) => {
+                          saveExerciseNote(exercise.exerciseId, e.target.value);
+                          setExerciseNotes((prev) => ({ ...prev, [exercise.exerciseId]: e.target.value }));
+                        }}
+                        placeholder="e.g. Keep elbows tucked, use rack #3..."
+                        rows={2}
+                        className="w-full bg-surface2 border border-surface2 rounded-lg px-3 py-2 text-sm text-textPrimary placeholder-textMuted focus:outline-none focus:border-accent transition-colors resize-none"
+                      />
+                    </div>
+                  )}
 
                   {/* Set input rows */}
                   <div className="space-y-2 mt-3">
