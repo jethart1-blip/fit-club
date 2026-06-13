@@ -15,6 +15,12 @@ function formatDate(isoString: string): string {
   });
 }
 
+function formatDuration(seconds: number): string {
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins}m ${secs}s`;
+}
+
 const logs: WorkoutLog[] = getWorkoutLogs().sort(
   (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
 );
@@ -71,6 +77,16 @@ export function History() {
                       {getSessionVolume(log).toLocaleString()} lbs
                     </span>
                   </p>
+                  {log.durationSeconds !== undefined && (
+                    <p className="text-xs text-textMuted mt-1">
+                      Duration: <span className="font-medium text-textPrimary">{formatDuration(log.durationSeconds)}</span>
+                    </p>
+                  )}
+                  {log.sessionDifficulty !== undefined && (
+                    <p className="text-xs text-textMuted mt-1">
+                      Difficulty: <span className="font-medium text-textPrimary">{log.sessionDifficulty}/10</span>
+                    </p>
+                  )}
                 </div>
                 <span className="text-textMuted text-lg leading-none select-none">
                   {isExpanded ? '▲' : '▼'}

@@ -36,6 +36,11 @@ export function TodaysWorkout() {
   const [checkedIn, setCheckedIn] = useState(!requireCheckin);
   const [readiness, setReadiness] = useState<number | undefined>(undefined);
   const [hoveredReadiness, setHoveredReadiness] = useState<number | undefined>(undefined);
+  const [workoutStarted, setWorkoutStarted] = useState(false);
+  const [startTime, setStartTime] = useState<number | null>(null);
+  const [showSummary, setShowSummary] = useState(false);
+  const [sessionDifficulty, setSessionDifficulty] = useState<number | undefined>(undefined);
+  const [hoveredDifficulty, setHoveredDifficulty] = useState<number | undefined>(undefined);
 
   const [program, setProgram] = useState<Program | null>(null);
   const [dayIndex, setDayIndex] = useState(0);
@@ -178,6 +183,10 @@ export function TodaysWorkout() {
   }
 
   function handleFinish() {
+    setShowSummary(true);
+  }
+
+  function handleSaveWorkout() {
     if (!program) return;
     const day = program.days[dayIndex % program.days.length];
 
@@ -206,12 +215,16 @@ export function TodaysWorkout() {
       return [{ exerciseId: ex.exerciseId, sets }];
     });
 
+    const durationSecs = startTime !== null ? Math.round((Date.now() - startTime) / 1000) : undefined;
+
     const log: WorkoutLog = {
       id: crypto.randomUUID(),
       date: new Date().toISOString(),
       programDayId: day.id,
       exercises: exerciseLogs,
       ...(readiness !== undefined && { readiness }),
+      ...(durationSecs !== undefined && { durationSeconds: durationSecs }),
+      ...(sessionDifficulty !== undefined && { sessionDifficulty }),
     };
 
     saveWorkoutLog(log);
@@ -221,6 +234,93 @@ export function TodaysWorkout() {
   }
 
   if (!program) return null;
+
+  if (showSummary) {
+    const displayDifficulty = hoveredDifficulty ?? sessionDifficulty;
+    const day = program.days[dayIndex % program.days.length];
+
+    return (
+      <div className="min-h-screen bg-pageBg p-4">
+        <div className="max-w-lg mx-auto space-y-4">
+          <div className="bg-surface rounded-2xl p-6">
+            <h1 className="text-2xl font-display text-textPrimary">Workout Summary</h1>
+            <p className="text-sm text-textMuted mt-1">{day.name}</p>
+          </div>
+
+          <div className="bg-surface rounded-2xl p-6 space-y-5">
+            {exercises.map((ex) => {
+              const exDef = EXERCISE_LIBRARY.find((e) => e.id === ex.exerciseId);
+              const name = exDef?.name ?? ex.exerciseId;
+              const rows = inputs[ex.exerciseId] ?? [];
+              const loggedRows = rows.filter((r) => r.weight !== '' || r.reps !== '');
+              if (loggedRows.length === 0) return null;
+              return (
+                <div key={ex.exerciseId}>
+                  <p className="text-sm font-display text-textPrimary mb-2">{name}</p>
+                  <div className="space-y-1">
+                    {loggedRows.map((r, i) => (
+                      <p key={i} className="text-sm text-textMuted">
+                        <span className="font-medium text-textPrimary">Set {i + 1}:</span>{' '}
+                        {r.weight || 0} lbs &times; {r.reps || 0} reps
+                        {r.rpe && ` @ RPE ${r.rpe}`}
+                      </p>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {!saved && (
+            <div className="bg-surface rounded-2xl p-8 space-y-7">
+              <h2 className="font-display text-xl text-textPrimary text-center leading-tight">
+                How hard was that workout?
+              </h2>
+              <div className="space-y-4">
+                <div className="flex flex-wrap justify-center gap-2">
+                  {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
+                    <button
+                      key={n}
+                      onClick={() => setSessionDifficulty(n)}
+                      onMouseEnter={() => setHoveredDifficulty(n)}
+                      onMouseLeave={() => setHoveredDifficulty(undefined)}
+                      className={`w-10 h-10 rounded-xl font-display text-base font-semibold transition-colors ${
+                        sessionDifficulty === n
+                          ? 'bg-accent text-pageBg'
+                          : 'bg-surface2 text-textPrimary hover:bg-surface2/70'
+                      }`}
+                    >
+                      {n}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-center text-sm font-medium h-5">
+                  {displayDifficulty ? (
+                    <span className="text-accent">{displayDifficulty}/10</span>
+                  ) : (
+                    <span className="text-textMuted">Tap a number</span>
+                  )}
+                </p>
+              </div>
+              <button
+                disabled={sessionDifficulty === undefined}
+                onClick={handleSaveWorkout}
+                className="w-full bg-accent hover:bg-accent/90 active:bg-accent/80 disabled:opacity-40 disabled:cursor-not-allowed text-pageBg font-semibold rounded-xl py-3 text-sm transition-colors"
+              >
+                Save Workout
+              </button>
+            </div>
+          )}
+
+          {saved && (
+            <div className="bg-surface2 border border-accent/30 rounded-xl p-4 text-center text-accent font-semibold text-sm">
+              Workout saved! Great work.
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   if (!checkedIn) {
     const displayValue = hoveredReadiness ?? readiness;
@@ -274,6 +374,30 @@ export function TodaysWorkout() {
   }
 
   const day = program.days[dayIndex % program.days.length];
+
+  if (checkedIn && !workoutStarted) {
+    return (
+      <div className="min-h-screen bg-pageBg flex flex-col items-center justify-center p-6">
+        <div className="bg-surface rounded-2xl p-8 w-full max-w-sm space-y-6 text-center">
+          <h1 className="font-display text-2xl text-textPrimary leading-tight">
+            Ready to start?
+          </h1>
+          <p className="text-textMuted text-sm">
+            We'll track how long this workout takes.
+          </p>
+          <button
+            onClick={() => {
+              setStartTime(Date.now());
+              setWorkoutStarted(true);
+            }}
+            className="w-full bg-accent hover:bg-accent/90 active:bg-accent/80 text-pageBg font-semibold rounded-xl py-3 text-sm transition-colors"
+          >
+            Start Workout
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (exercises.length === 0) {
     return (

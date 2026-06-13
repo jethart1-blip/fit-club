@@ -101,6 +101,8 @@ export interface WorkoutLog {
   exercises: ExerciseLog[];
   /** How the user felt before this workout: 1 (worst) – 10 (best). */
   readiness?: number;
+  durationSeconds?: number;
+  sessionDifficulty?: number;
 }
 
 export interface CustomExercise {
