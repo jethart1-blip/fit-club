@@ -4,7 +4,10 @@ import { getWorkoutLogs, getProgram } from '../lib/storage';
 import { EXERCISE_LIBRARY } from '../data/exercises';
 
 function formatDate(isoString: string): string {
-  return new Date(isoString).toLocaleDateString('en-US', {
+  if (!isoString) return 'Unknown date';
+  const d = new Date(isoString);
+  if (isNaN(d.getTime())) return 'Unknown date';
+  return d.toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
@@ -72,7 +75,7 @@ export function History() {
                   {log.exercises.map((exLog) => {
                     const exerciseName =
                       EXERCISE_LIBRARY.find((e) => e.id === exLog.exerciseId)?.name ??
-                      exLog.exerciseId;
+                      'Unknown Exercise';
 
                     return (
                       <div key={exLog.exerciseId}>

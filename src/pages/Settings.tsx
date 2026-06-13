@@ -1,30 +1,93 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { UserProfile } from '../types';
-import { getProfile, saveProgram, setCurrentDayIndex, clearAllData } from '../lib/storage';
+import type { UserProfile, EquipmentType, Goal, SplitId } from '../types';
+import { getProfile, saveProfile, saveProgram, setCurrentDayIndex, clearAllData } from '../lib/storage';
 import { generateProgram } from '../lib/generateProgram';
+import { SPLITS } from '../data/splits';
+
+const EQUIPMENT_LABELS: Record<EquipmentType, string> = {
+  barbell: 'Barbell',
+  dumbbells: 'Dumbbells',
+  machines: 'Machines',
+  cables: 'Cables',
+  bodyweight: 'Bodyweight',
+};
+
+const GOAL_LABELS: Record<Goal, string> = {
+  strength: 'Strength',
+  hypertrophy: 'Hypertrophy',
+  general_fitness: 'General Fitness',
+  fat_loss: 'Fat Loss',
+};
+
+function isValidProfile(p: UserProfile): boolean {
+  return (
+    typeof p.age === 'number' && !isNaN(p.age) && p.age > 0 &&
+    typeof p.weightLbs === 'number' && !isNaN(p.weightLbs) && p.weightLbs > 0 &&
+    typeof p.heightInches === 'number' && !isNaN(p.heightInches) && p.heightInches > 0 &&
+    typeof p.daysPerWeek === 'number' && !isNaN(p.daysPerWeek) && p.daysPerWeek >= 1
+  );
+}
+
+const splitCardClass = (selected: boolean) =>
+  `flex items-center gap-3 rounded-xl border-2 px-4 py-3 cursor-pointer text-sm font-medium transition-colors ${
+    selected
+      ? 'border-indigo-600 bg-indigo-50 text-indigo-700'
+      : 'border-gray-200 text-gray-600 hover:border-gray-300'
+  }`;
 
 export function Settings() {
   const navigate = useNavigate();
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [selectedSplitId, setSelectedSplitId] = useState<SplitId | null>(null);
   const [successMessage, setSuccessMessage] = useState('');
+  const [warningMessage, setWarningMessage] = useState('');
 
   useEffect(() => {
     const p = getProfile();
-    if (!p) {
+    if (!p || !isValidProfile(p)) {
       navigate('/onboarding');
       return;
     }
     setProfile(p);
+    setSelectedSplitId(p.splitId);
   }, [navigate]);
+
+  function showSuccess(msg: string) {
+    setSuccessMessage(msg);
+    setWarningMessage('');
+    setTimeout(() => setSuccessMessage(''), 4000);
+  }
+
+  function handleSaveSplit() {
+    if (!profile || !selectedSplitId || selectedSplitId === profile.splitId) return;
+    const updated: UserProfile = { ...profile, splitId: selectedSplitId };
+    saveProfile(updated);
+    const result = generateProgram(updated);
+    saveProgram(result);
+    setCurrentDayIndex(0);
+    setProfile(updated);
+    showSuccess('Split updated! Your program has been regenerated.');
+  }
 
   function handleRegenerate() {
     if (!profile) return;
-    const program = generateProgram(profile);
-    saveProgram(program);
+    const result = generateProgram(profile);
+    saveProgram(result);
     setCurrentDayIndex(0);
-    setSuccessMessage('Program regenerated!');
-    setTimeout(() => setSuccessMessage(''), 3000);
+    const hasEmptyDay = result.days.some((d) => d.exercises.length === 0);
+    if (hasEmptyDay) {
+      setWarningMessage(
+        'Warning: with your current equipment, some days have no exercises. Consider selecting more equipment types.'
+      );
+      setSuccessMessage('Program regenerated!');
+      setTimeout(() => {
+        setSuccessMessage('');
+        setWarningMessage('');
+      }, 6000);
+    } else {
+      showSuccess('Program regenerated!');
+    }
   }
 
   function handleResetAll() {
@@ -36,26 +99,76 @@ export function Settings() {
 
   if (!profile) return null;
 
+  const splitChanged = selectedSplitId !== null && selectedSplitId !== profile.splitId;
+
   return (
     <div className="min-h-screen bg-gray-50 p-4">
-      <div className="max-w-sm mx-auto pt-8">
+      <div className="max-w-sm mx-auto pt-8 pb-12">
         <h1 className="text-2xl font-bold text-gray-900 mb-1">Settings</h1>
         <p className="text-gray-500 text-sm mb-8">Manage your profile and program.</p>
 
-        <div className="bg-white rounded-2xl shadow-md p-6 mb-6 space-y-3">
+        {/* Current Profile */}
+        <div className="bg-white rounded-2xl shadow-md p-6 mb-6">
           <h2 className="text-sm font-semibold text-gray-700 mb-4">Current Profile</h2>
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-500">Days per week</span>
-            <span className="font-medium text-gray-900">{profile.daysPerWeek}</span>
-          </div>
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-500">Equipment</span>
-            <span className="font-medium text-gray-900">
-              {profile.equipment === 'full_gym' ? 'Full Gym' : 'Dumbbells Only'}
-            </span>
+          <div className="space-y-3">
+            {[
+              { label: 'Age', value: `${profile.age} yrs` },
+              { label: 'Weight', value: `${profile.weightLbs} lbs` },
+              { label: 'Height', value: `${profile.heightInches} in` },
+              { label: 'Days per week', value: String(profile.daysPerWeek) },
+              { label: 'Goal', value: GOAL_LABELS[profile.goal] },
+              {
+                label: 'Equipment',
+                value: profile.equipment.map((e) => EQUIPMENT_LABELS[e]).join(', '),
+              },
+              { label: 'Current Split', value: SPLITS[profile.splitId].name },
+            ].map(({ label, value }) => (
+              <div key={label} className="flex items-start justify-between text-sm gap-4">
+                <span className="text-gray-500 flex-shrink-0">{label}</span>
+                <span className="font-medium text-gray-900 text-right">{value}</span>
+              </div>
+            ))}
           </div>
         </div>
 
+        {/* Change Split */}
+        <div className="bg-white rounded-2xl shadow-md p-6 mb-6">
+          <h2 className="text-sm font-semibold text-gray-700 mb-1">Change Split</h2>
+          <p className="text-xs text-gray-400 mb-4">Select a new training structure.</p>
+          <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+            {Object.values(SPLITS).map((split) => (
+              <label key={split.id} className={splitCardClass(selectedSplitId === split.id)}>
+                <input
+                  type="radio"
+                  name="splitId"
+                  value={split.id}
+                  checked={selectedSplitId === split.id}
+                  onChange={() => setSelectedSplitId(split.id)}
+                  className="sr-only"
+                />
+                <div>
+                  <div>{split.name}</div>
+                  <div
+                    className={`text-xs font-normal mt-0.5 ${
+                      selectedSplitId === split.id ? 'text-indigo-500' : 'text-gray-400'
+                    }`}
+                  >
+                    {split.description}
+                  </div>
+                </div>
+              </label>
+            ))}
+          </div>
+          <button
+            onClick={handleSaveSplit}
+            disabled={!splitChanged}
+            className="mt-4 w-full bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold rounded-xl py-3 text-sm transition-colors"
+          >
+            Save Split
+          </button>
+        </div>
+
+        {/* Actions */}
         <div className="space-y-3">
           <button
             onClick={handleRegenerate}
@@ -66,6 +179,9 @@ export function Settings() {
 
           {successMessage && (
             <p className="text-center text-sm text-indigo-600 font-medium">{successMessage}</p>
+          )}
+          {warningMessage && (
+            <p className="text-center text-sm text-amber-600 font-medium">{warningMessage}</p>
           )}
 
           <button
