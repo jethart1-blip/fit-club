@@ -67,20 +67,19 @@ export function Progress() {
     });
   }, [selectedId]);
 
-  // Most recent and previous estimated 1RM for congratulatory note
   const current1RM = chartData.length > 0 ? chartData[chartData.length - 1].estimated1RM : null;
   const previous1RM = chartData.length > 1 ? chartData[chartData.length - 2].estimated1RM : null;
   const isNewRecord = current1RM !== null && previous1RM !== null && current1RM > previous1RM;
 
   if (loggedExercises.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 p-4">
+      <div className="min-h-screen bg-pageBg p-4">
         <div className="max-w-lg mx-auto">
-          <div className="bg-white rounded-2xl shadow-md p-6 mb-4">
-            <h1 className="text-2xl font-bold text-gray-900">Progress</h1>
+          <div className="bg-surface rounded-2xl p-6 mb-4">
+            <h1 className="text-2xl font-display text-textPrimary">Progress</h1>
           </div>
-          <div className="bg-white rounded-2xl shadow-md p-8 text-center">
-            <p className="text-gray-400 text-base">No progress data yet — log a workout first.</p>
+          <div className="bg-surface rounded-2xl p-8 text-center">
+            <p className="text-textMuted text-base">No progress data yet — log a workout first.</p>
           </div>
         </div>
       </div>
@@ -93,19 +92,19 @@ export function Progress() {
     : null;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
+    <div className="min-h-screen bg-pageBg p-4">
       <div className="max-w-lg mx-auto space-y-4">
-        <div className="bg-white rounded-2xl shadow-md p-6">
-          <h1 className="text-2xl font-bold text-gray-900">Progress</h1>
-          <p className="text-sm text-gray-500 mt-1">Track your max weight and estimated 1RM over time</p>
+        <div className="bg-surface rounded-2xl p-6">
+          <h1 className="text-2xl font-display text-textPrimary">Progress</h1>
+          <p className="text-sm text-textMuted mt-1">Track your max weight and estimated 1RM over time</p>
         </div>
 
         {/* Chart section */}
-        <div className="bg-white rounded-2xl shadow-md p-6 space-y-5">
+        <div className="bg-surface rounded-2xl p-6 space-y-5">
           <div>
             <label
               htmlFor="exercise-select"
-              className="block text-sm font-medium text-gray-700 mb-2"
+              className="block text-sm font-medium text-textMuted mb-2"
             >
               Exercise
             </label>
@@ -113,10 +112,10 @@ export function Progress() {
               id="exercise-select"
               value={selectedId}
               onChange={(e) => setSelectedId(e.target.value)}
-              className="w-full rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-xl border border-surface2 bg-surface2 px-4 py-2.5 text-sm text-textPrimary focus:outline-none focus:border-accent transition-colors"
             >
               {loggedExercises.map((ex) => (
-                <option key={ex.id} value={ex.id}>
+                <option key={ex.id} value={ex.id} className="bg-surface2 text-textPrimary">
                   {ex.name}
                 </option>
               ))}
@@ -124,19 +123,19 @@ export function Progress() {
           </div>
 
           {chartData.length === 0 ? (
-            <p className="text-gray-400 text-sm text-center py-6">No data for this exercise.</p>
+            <p className="text-textMuted text-sm text-center py-6">No data for this exercise.</p>
           ) : (
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={chartData} margin={{ top: 4, right: 8, bottom: 4, left: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                <CartesianGrid strokeDasharray="3 3" stroke="#363b46" />
                 <XAxis
                   dataKey="date"
-                  tick={{ fontSize: 12, fill: '#6b7280' }}
+                  tick={{ fontSize: 12, fill: '#9ca3af' }}
                   axisLine={false}
                   tickLine={false}
                 />
                 <YAxis
-                  tick={{ fontSize: 12, fill: '#6b7280' }}
+                  tick={{ fontSize: 12, fill: '#9ca3af' }}
                   axisLine={false}
                   tickLine={false}
                   width={40}
@@ -145,9 +144,12 @@ export function Progress() {
                 <Tooltip
                   contentStyle={{
                     borderRadius: '0.75rem',
-                    border: '1px solid #e5e7eb',
+                    border: '1px solid #363b46',
+                    background: '#2a2e37',
                     fontSize: '0.875rem',
+                    color: '#f1f1ef',
                   }}
+                  labelStyle={{ color: '#9ca3af' }}
                   formatter={(value, name) => [
                     `${Number(value)} lb`,
                     name === 'weight' ? 'Max Weight' : 'Est. 1RM',
@@ -155,22 +157,22 @@ export function Progress() {
                 />
                 <Legend
                   formatter={(value) => (value === 'weight' ? 'Max Weight' : 'Est. 1RM')}
-                  wrapperStyle={{ fontSize: '0.8rem' }}
+                  wrapperStyle={{ fontSize: '0.8rem', color: '#9ca3af' }}
                 />
                 <Line
                   type="monotone"
                   dataKey="weight"
-                  stroke="#3b82f6"
+                  stroke="#d4ff4f"
                   strokeWidth={2}
-                  dot={{ r: 4, fill: '#3b82f6', strokeWidth: 0 }}
+                  dot={{ r: 4, fill: '#d4ff4f', strokeWidth: 0 }}
                   activeDot={{ r: 6 }}
                 />
                 <Line
                   type="monotone"
                   dataKey="estimated1RM"
-                  stroke="#22c55e"
+                  stroke="#2dd4bf"
                   strokeWidth={2}
-                  dot={{ r: 4, fill: '#22c55e', strokeWidth: 0 }}
+                  dot={{ r: 4, fill: '#2dd4bf', strokeWidth: 0 }}
                   activeDot={{ r: 6 }}
                 />
               </LineChart>
@@ -179,13 +181,13 @@ export function Progress() {
 
           {/* Estimated 1RM summary */}
           {current1RM !== null && (
-            <div className="rounded-xl bg-gray-50 px-4 py-3 space-y-1">
-              <p className="text-sm text-gray-600">
+            <div className="rounded-xl bg-surface2 px-4 py-3 space-y-1">
+              <p className="text-sm text-textMuted">
                 Current estimated 1RM:{' '}
-                <span className="font-semibold text-gray-900">{current1RM} lbs</span>
+                <span className="font-semibold text-textPrimary">{current1RM} lbs</span>
               </p>
               {isNewRecord && (
-                <p className="text-sm font-medium text-green-600">
+                <p className="text-sm font-medium text-accent2">
                   🎉 New estimated 1RM: {current1RM} lbs — up from {previous1RM}!
                 </p>
               )}
@@ -194,11 +196,11 @@ export function Progress() {
         </div>
 
         {/* Session browser */}
-        <div className="bg-white rounded-2xl shadow-md p-6 space-y-4">
-          <h2 className="text-lg font-semibold text-gray-900">Workout Sessions</h2>
+        <div className="bg-surface rounded-2xl p-6 space-y-4">
+          <h2 className="text-lg font-display text-textPrimary">Workout Sessions</h2>
 
           {logsSortedAsc.length === 0 ? (
-            <p className="text-gray-400 text-sm text-center py-4">No workout sessions yet.</p>
+            <p className="text-textMuted text-sm text-center py-4">No workout sessions yet.</p>
           ) : (
             <>
               {/* Nav controls */}
@@ -206,17 +208,17 @@ export function Progress() {
                 <button
                   onClick={() => setSessionIndex((i) => Math.max(0, i - 1))}
                   disabled={sessionIndex === 0}
-                  className="px-4 py-1.5 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 disabled:opacity-40 hover:bg-gray-200 transition-colors"
+                  className="px-4 py-1.5 rounded-lg text-sm font-medium bg-surface2 text-textPrimary disabled:opacity-40 hover:bg-surface2/80 transition-colors"
                 >
                   ← Prev
                 </button>
-                <span className="text-sm text-gray-500">
+                <span className="text-sm text-textMuted">
                   {sessionIndex + 1} / {logsSortedAsc.length}
                 </span>
                 <button
                   onClick={() => setSessionIndex((i) => Math.min(logsSortedAsc.length - 1, i + 1))}
                   disabled={sessionIndex === logsSortedAsc.length - 1}
-                  className="px-4 py-1.5 rounded-lg text-sm font-medium bg-gray-100 text-gray-700 disabled:opacity-40 hover:bg-gray-200 transition-colors"
+                  className="px-4 py-1.5 rounded-lg text-sm font-medium bg-surface2 text-textPrimary disabled:opacity-40 hover:bg-surface2/80 transition-colors"
                 >
                   Next →
                 </button>
@@ -226,8 +228,8 @@ export function Progress() {
               {sessionLog && (
                 <div className="space-y-4">
                   <div>
-                    <p className="text-base font-semibold text-gray-900">{sessionDayName}</p>
-                    <p className="text-sm text-gray-500 mt-0.5">{formatDateLong(sessionLog.date)}</p>
+                    <p className="text-base font-semibold text-textPrimary">{sessionDayName}</p>
+                    <p className="text-sm text-textMuted mt-0.5">{formatDateLong(sessionLog.date)}</p>
                   </div>
 
                   <div className="space-y-4">
@@ -238,11 +240,11 @@ export function Progress() {
 
                       return (
                         <div key={exLog.exerciseId}>
-                          <p className="text-sm font-semibold text-gray-800 mb-2">{exerciseName}</p>
+                          <p className="text-sm font-display text-textPrimary mb-2">{exerciseName}</p>
                           <div className="space-y-1">
                             {exLog.sets.map((set) => (
-                              <p key={set.setNumber} className="text-sm text-gray-600">
-                                <span className="font-medium text-gray-700">Set {set.setNumber}:</span>{' '}
+                              <p key={set.setNumber} className="text-sm text-textMuted">
+                                <span className="font-medium text-textPrimary">Set {set.setNumber}:</span>{' '}
                                 {set.weight} lbs &times; {set.reps} reps
                               </p>
                             ))}

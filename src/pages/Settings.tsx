@@ -32,8 +32,8 @@ function isValidProfile(p: UserProfile): boolean {
 const splitCardClass = (selected: boolean) =>
   `flex items-center gap-3 rounded-xl border-2 px-4 py-3 cursor-pointer text-sm font-medium transition-colors ${
     selected
-      ? 'border-indigo-600 bg-indigo-50 text-indigo-700'
-      : 'border-gray-200 text-gray-600 hover:border-gray-300'
+      ? 'border-accent bg-surface2 text-textPrimary'
+      : 'border-surface2 text-textMuted hover:border-accent/50'
   }`;
 
 export function Settings() {
@@ -102,14 +102,14 @@ export function Settings() {
   const splitChanged = selectedSplitId !== null && selectedSplitId !== profile.splitId;
 
   return (
-    <div className="min-h-screen bg-gray-50 p-4">
+    <div className="min-h-screen bg-pageBg p-4">
       <div className="max-w-sm mx-auto pt-8 pb-12">
-        <h1 className="text-2xl font-bold text-gray-900 mb-1">Settings</h1>
-        <p className="text-gray-500 text-sm mb-8">Manage your profile and program.</p>
+        <h1 className="text-2xl font-display text-textPrimary mb-1">Settings</h1>
+        <p className="text-textMuted text-sm mb-8">Manage your profile and program.</p>
 
         {/* Current Profile */}
-        <div className="bg-white rounded-2xl shadow-md p-6 mb-6">
-          <h2 className="text-sm font-semibold text-gray-700 mb-4">Current Profile</h2>
+        <div className="bg-surface rounded-2xl p-6 mb-6">
+          <h2 className="text-sm font-semibold text-textMuted mb-4">Current Profile</h2>
           <div className="space-y-3">
             {[
               { label: 'Age', value: `${profile.age} yrs` },
@@ -124,17 +124,17 @@ export function Settings() {
               { label: 'Current Split', value: SPLITS[profile.splitId].name },
             ].map(({ label, value }) => (
               <div key={label} className="flex items-start justify-between text-sm gap-4">
-                <span className="text-gray-500 flex-shrink-0">{label}</span>
-                <span className="font-medium text-gray-900 text-right">{value}</span>
+                <span className="text-textMuted flex-shrink-0">{label}</span>
+                <span className="font-medium text-textPrimary text-right">{value}</span>
               </div>
             ))}
           </div>
         </div>
 
         {/* Change Split */}
-        <div className="bg-white rounded-2xl shadow-md p-6 mb-6">
-          <h2 className="text-sm font-semibold text-gray-700 mb-1">Change Split</h2>
-          <p className="text-xs text-gray-400 mb-4">Select a new training structure.</p>
+        <div className="bg-surface rounded-2xl p-6 mb-6">
+          <h2 className="text-sm font-semibold text-textMuted mb-1">Change Split</h2>
+          <p className="text-xs text-textMuted mb-4">Select a new training structure.</p>
           <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
             {Object.values(SPLITS).map((split) => (
               <label key={split.id} className={splitCardClass(selectedSplitId === split.id)}>
@@ -150,7 +150,7 @@ export function Settings() {
                   <div>{split.name}</div>
                   <div
                     className={`text-xs font-normal mt-0.5 ${
-                      selectedSplitId === split.id ? 'text-indigo-500' : 'text-gray-400'
+                      selectedSplitId === split.id ? 'text-accent' : 'text-textMuted'
                     }`}
                   >
                     {split.description}
@@ -162,7 +162,7 @@ export function Settings() {
           <button
             onClick={handleSaveSplit}
             disabled={!splitChanged}
-            className="mt-4 w-full bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 disabled:opacity-40 disabled:cursor-not-allowed text-white font-semibold rounded-xl py-3 text-sm transition-colors"
+            className="mt-4 w-full bg-accent hover:bg-accent/90 active:bg-accent/80 disabled:opacity-40 disabled:cursor-not-allowed text-pageBg font-semibold rounded-xl py-3 text-sm transition-colors"
           >
             Save Split
           </button>
@@ -172,21 +172,21 @@ export function Settings() {
         <div className="space-y-3">
           <button
             onClick={handleRegenerate}
-            className="w-full bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800 text-white font-semibold rounded-xl py-3 text-sm transition-colors"
+            className="w-full bg-accent hover:bg-accent/90 active:bg-accent/80 text-pageBg font-semibold rounded-xl py-3 text-sm transition-colors"
           >
             Regenerate Program
           </button>
 
           {successMessage && (
-            <p className="text-center text-sm text-indigo-600 font-medium">{successMessage}</p>
+            <p className="text-center text-sm text-accent font-medium">{successMessage}</p>
           )}
           {warningMessage && (
-            <p className="text-center text-sm text-amber-600 font-medium">{warningMessage}</p>
+            <p className="text-center text-sm text-amber-400 font-medium">{warningMessage}</p>
           )}
 
           <button
             onClick={handleResetAll}
-            className="w-full border-2 border-red-400 text-red-500 hover:bg-red-50 active:bg-red-100 font-semibold rounded-xl py-3 text-sm transition-colors"
+            className="w-full bg-danger hover:bg-danger/90 active:bg-danger/80 text-white font-semibold rounded-xl py-3 text-sm transition-colors"
           >
             Reset All Data
           </button>
