@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 
 import { Layout } from '@/components/Layout'
+import { Coach } from '@/pages/Coach'
 import { History } from '@/pages/History'
 import { Home } from '@/pages/Home'
 import { Onboarding } from '@/pages/Onboarding'
@@ -70,6 +71,14 @@ function App() {
           element={
             <Layout>
               <WorkoutBuilder />
+            </Layout>
+          }
+        />
+        <Route
+          path="/coach"
+          element={
+            <Layout>
+              <Coach />
             </Layout>
           }
         />

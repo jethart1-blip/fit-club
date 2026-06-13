@@ -334,11 +334,11 @@ export function WorkoutBuilder() {
                                       ⠿
                                     </span>
                                     <span className="flex-1 leading-tight">{exercise.name}</span>
-                                    {'custom' in exercise && exercise.custom && (
+                                    {('custom' in exercise && exercise.custom) ? (
                                       <span className="text-[10px] font-semibold text-accent/50 uppercase tracking-wide shrink-0">
                                         custom
                                       </span>
-                                    )}
+                                    ) : null}
                                   </div>
                                 )}
                               </Draggable>
