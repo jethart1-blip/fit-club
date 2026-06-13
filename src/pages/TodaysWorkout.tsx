@@ -41,6 +41,7 @@ export function TodaysWorkout() {
   const [exercises, setExercises] = useState<ProgramExercise[]>([]);
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [inputs, setInputs] = useState<Record<string, SetInputs[]>>({});
+  const [suggestedWeights, setSuggestedWeights] = useState<Record<string, number | null>>({});
   const [restSecondsLeft, setRestSecondsLeft] = useState<number | null>(null);
   const [restTotalSeconds, setRestTotalSeconds] = useState<number>(0);
   const [saved, setSaved] = useState(false);
@@ -57,23 +58,11 @@ export function TodaysWorkout() {
     const existingLogs = getWorkoutLogs();
     const day = p.days[idx];
 
-    const firstEx = day.exercises[0];
-    if (firstEx) {
-      console.log('[SuggestedWeight debug]', {
-        exerciseId: firstEx.exerciseId,
-        exerciseName: firstEx.exerciseId,
-        totalLogs: existingLogs.length,
-        allLoggedExerciseIds: existingLogs.flatMap(l => l.exercises.map(e => e.exerciseId)),
-        logsWithThisExercise: existingLogs.filter(l =>
-          l.exercises.some(e => e.exerciseId === firstEx.exerciseId)
-        ).length,
-        suggested: getSuggestedWeight(firstEx.exerciseId, firstEx, existingLogs),
-      });
-    }
-
     const initialInputs: Record<string, SetInputs[]> = {};
+    const initialSuggestedWeights: Record<string, number | null> = {};
     for (const ex of day.exercises) {
       const suggested = getSuggestedWeight(ex.exerciseId, ex, existingLogs);
+      initialSuggestedWeights[ex.exerciseId] = suggested;
       initialInputs[ex.exerciseId] = Array.from({ length: ex.targetSets }, () => ({
         weight: suggested !== null ? String(suggested) : '',
         reps: '',
@@ -86,6 +75,7 @@ export function TodaysWorkout() {
     setLogs(existingLogs);
     setExercises(day.exercises);
     setInputs(initialInputs);
+    setSuggestedWeights(initialSuggestedWeights);
   }, [navigate]);
 
   // Rest timer countdown
@@ -130,20 +120,22 @@ export function TodaysWorkout() {
     setProgram(updatedProgram);
     setExercises(updatedDay.exercises);
 
-    setInputs((prev) => {
-      if (prev[newId]) return prev;
-      const updatedEx = updatedDay.exercises.find((e) => e.slot === ex.slot);
-      if (!updatedEx) return prev;
+    const updatedEx = updatedDay.exercises.find((e) => e.slot === ex.slot);
+    if (updatedEx) {
       const suggested = getSuggestedWeight(newId, updatedEx, logs);
-      return {
-        ...prev,
-        [newId]: Array.from({ length: updatedEx.targetSets }, () => ({
-          weight: suggested !== null ? String(suggested) : '',
-          reps: '',
-          rpe: '',
-        })),
-      };
-    });
+      setSuggestedWeights((prev) => ({ ...prev, [newId]: suggested }));
+      setInputs((prev) => {
+        if (prev[newId]) return prev;
+        return {
+          ...prev,
+          [newId]: Array.from({ length: updatedEx.targetSets }, () => ({
+            weight: suggested !== null ? String(suggested) : '',
+            reps: '',
+            rpe: '',
+          })),
+        };
+      });
+    }
   }
 
   function handleFinish() {
@@ -362,6 +354,12 @@ export function TodaysWorkout() {
                   {exercise.targetSets} sets &times; {exercise.targetRepsMin}–{exercise.targetRepsMax}{' '}
                   reps
                 </p>
+                {suggestedWeights[exercise.exerciseId] !== null &&
+                  suggestedWeights[exercise.exerciseId] !== undefined && (
+                  <p className="text-xs text-accent mt-0.5">
+                    Suggested: {suggestedWeights[exercise.exerciseId]} lbs
+                  </p>
+                )}
               </div>
               {hasAlternatives && (
                 <button

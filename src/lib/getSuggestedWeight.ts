@@ -1,6 +1,7 @@
 import type { WorkoutLog } from '../types';
 
 const WEIGHT_INCREMENT = 5;
+const HIGH_RPE_THRESHOLD = 9.5;
 
 export function getSuggestedWeight(
   exerciseId: string,
@@ -27,6 +28,9 @@ export function getSuggestedWeight(
   const allHitMax = recentLog.sets.every(
     (s) => s.reps >= programTarget.targetRepsMax
   );
+  const anyHighRpe = recentLog.sets.some(
+    (s) => s.rpe !== undefined && s.rpe >= HIGH_RPE_THRESHOLD
+  );
 
-  return allHitMax ? lastSetWeight + WEIGHT_INCREMENT : lastSetWeight;
+  return allHitMax && !anyHighRpe ? lastSetWeight + WEIGHT_INCREMENT : lastSetWeight;
 }
