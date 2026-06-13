@@ -156,3 +156,16 @@ export interface WeightEntry {
   date: string;
   weightLbs: number;
 }
+
+export interface BodyMeasurement {
+  id: string;
+  date: string;
+  waist?: number;
+  chest?: number;
+  arms?: number;
+  thighs?: number;
+  hips?: number;
+  shoulders?: number;
+  calves?: number;
+  neck?: number;
+}

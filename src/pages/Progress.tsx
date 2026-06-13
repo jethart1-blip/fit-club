@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import type { WorkoutLog, Program, ProgressPhoto, WeightEntry } from '../types';
+import type { WorkoutLog, Program, ProgressPhoto, WeightEntry, BodyMeasurement } from '../types';
 import {
   getWorkoutLogs,
   getProgram,
@@ -9,6 +9,9 @@ import {
   getWeightEntries,
   saveWeightEntry,
   deleteWeightEntry,
+  getBodyMeasurements,
+  saveBodyMeasurement,
+  deleteBodyMeasurement,
 } from '../lib/storage';
 import { compressImage } from '../lib/imageCompression';
 import { EXERCISE_LIBRARY } from '../data/exercises';
@@ -48,6 +51,17 @@ function formatDateLong(isoString: string): string {
   });
 }
 
+const MEASUREMENT_FIELDS: { key: keyof Omit<BodyMeasurement, 'id' | 'date'>; label: string }[] = [
+  { key: 'chest', label: 'Chest' },
+  { key: 'waist', label: 'Waist' },
+  { key: 'hips', label: 'Hips' },
+  { key: 'arms', label: 'Arms' },
+  { key: 'thighs', label: 'Thighs' },
+  { key: 'calves', label: 'Calves' },
+  { key: 'shoulders', label: 'Shoulders' },
+  { key: 'neck', label: 'Neck' },
+];
+
 export function Progress() {
   const loggedExercises = useMemo(() => {
     const ids = new Set<string>();
@@ -71,6 +85,9 @@ export function Progress() {
   const [photoWeight, setPhotoWeight] = useState('');
   const [weightEntries, setWeightEntries] = useState<WeightEntry[]>(getWeightEntries);
   const [newWeight, setNewWeight] = useState('');
+  const [measurements, setMeasurements] = useState<BodyMeasurement[]>(getBodyMeasurements);
+  const [measurementInputs, setMeasurementInputs] = useState<Record<string, string>>({});
+  const [selectedMeasurementField, setSelectedMeasurementField] = useState<string>('waist');
 
   const chartData = useMemo(() => {
     if (!selectedId) return [];
@@ -310,6 +327,137 @@ export function Progress() {
                       </div>
                     </li>
                   ))}
+              </ul>
+            )}
+          </div>
+
+          {/* Body Measurements */}
+          <div className="bg-surface rounded-2xl p-6 space-y-4">
+            <h2 className="text-lg font-display text-textPrimary">Body Measurements (in)</h2>
+
+            <div className="grid grid-cols-2 gap-3">
+              {MEASUREMENT_FIELDS.map((field) => (
+                <div key={field.key}>
+                  <label className="block text-xs font-medium text-textMuted mb-1">{field.label}</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.1"
+                    placeholder="in"
+                    value={measurementInputs[field.key] ?? ''}
+                    onChange={(e) =>
+                      setMeasurementInputs((prev) => ({ ...prev, [field.key]: e.target.value }))
+                    }
+                    className="w-full rounded-xl border border-surface2 bg-surface2 px-3 py-2 text-sm text-textPrimary placeholder-textMuted focus:outline-none focus:border-accent transition-colors"
+                  />
+                </div>
+              ))}
+            </div>
+
+            <button
+              onClick={() => {
+                const hasAny = MEASUREMENT_FIELDS.some(
+                  (f) => measurementInputs[f.key] !== undefined && measurementInputs[f.key] !== '' && !isNaN(Number(measurementInputs[f.key]))
+                );
+                if (!hasAny) return;
+                const entry: BodyMeasurement = { id: crypto.randomUUID(), date: new Date().toISOString() };
+                for (const field of MEASUREMENT_FIELDS) {
+                  const val = measurementInputs[field.key];
+                  if (val !== undefined && val !== '' && !isNaN(Number(val))) {
+                    entry[field.key] = Number(val);
+                  }
+                }
+                saveBodyMeasurement(entry);
+                setMeasurements(getBodyMeasurements());
+                setMeasurementInputs({});
+              }}
+              disabled={!MEASUREMENT_FIELDS.some(
+                (f) => measurementInputs[f.key] !== undefined && measurementInputs[f.key] !== '' && !isNaN(Number(measurementInputs[f.key]))
+              )}
+              className="w-full px-4 py-2.5 rounded-xl text-sm font-medium bg-accent text-black disabled:opacity-40 hover:bg-accent/90 transition-colors"
+            >
+              Log Measurements
+            </button>
+
+            <div>
+              <label className="block text-sm font-medium text-textMuted mb-1.5">Trend chart for</label>
+              <select
+                value={selectedMeasurementField}
+                onChange={(e) => setSelectedMeasurementField(e.target.value)}
+                className="w-full rounded-xl border border-surface2 bg-surface2 px-4 py-2.5 text-sm text-textPrimary focus:outline-none focus:border-accent transition-colors"
+              >
+                {MEASUREMENT_FIELDS.map((f) => (
+                  <option key={f.key} value={f.key} className="bg-surface2 text-textPrimary">
+                    {f.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {(() => {
+              const filtered = measurements
+                .filter((m) => m[selectedMeasurementField as keyof BodyMeasurement] !== undefined)
+                .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+              if (filtered.length >= 2) {
+                return (
+                  <ResponsiveContainer width="100%" height={240}>
+                    <LineChart
+                      data={filtered.map((m) => ({
+                        date: formatDate(m.date),
+                        value: m[selectedMeasurementField as keyof BodyMeasurement] as number,
+                      }))}
+                      margin={{ top: 4, right: 8, bottom: 4, left: 0 }}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="#363b46" />
+                      <XAxis dataKey="date" tick={{ fontSize: 12, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fontSize: 12, fill: '#9ca3af' }} axisLine={false} tickLine={false} width={48} unit=" in" />
+                      <Tooltip
+                        contentStyle={{ borderRadius: '0.75rem', border: '1px solid #363b46', background: '#2a2e37', fontSize: '0.875rem', color: '#f1f1ef' }}
+                        labelStyle={{ color: '#9ca3af' }}
+                        formatter={(value) => [`${Number(value)} in`, MEASUREMENT_FIELDS.find((f) => f.key === selectedMeasurementField)?.label ?? selectedMeasurementField]}
+                      />
+                      <Line type="monotone" dataKey="value" stroke="#d4ff4f" strokeWidth={2} dot={{ r: 4, fill: '#d4ff4f', strokeWidth: 0 }} activeDot={{ r: 6 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                );
+              }
+              return (
+                <p className="text-textMuted text-sm text-center py-4">
+                  Log at least 2 entries with this measurement to see a trend chart.
+                </p>
+              );
+            })()}
+
+            {measurements.length > 0 && (
+              <ul className="space-y-2">
+                {measurements
+                  .slice()
+                  .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                  .slice(0, 5)
+                  .map((entry) => {
+                    const summary = MEASUREMENT_FIELDS
+                      .filter((f) => entry[f.key] !== undefined)
+                      .map((f) => `${f.label}: ${entry[f.key]}in`)
+                      .join(', ');
+                    return (
+                      <li key={entry.id} className="flex items-start justify-between text-sm gap-2">
+                        <div>
+                          <span className="text-textMuted block">{formatDateLong(entry.date)}</span>
+                          <span className="text-textPrimary text-xs">{summary}</span>
+                        </div>
+                        <button
+                          onClick={() => {
+                            deleteBodyMeasurement(entry.id);
+                            setMeasurements(getBodyMeasurements());
+                          }}
+                          className="text-xs text-danger hover:opacity-70 transition-opacity shrink-0 mt-0.5"
+                          aria-label="Delete measurement"
+                        >
+                          Delete
+                        </button>
+                      </li>
+                    );
+                  })}
               </ul>
             )}
           </div>
@@ -718,6 +866,137 @@ export function Progress() {
                     </div>
                   </li>
                 ))}
+            </ul>
+          )}
+        </div>
+
+        {/* Body Measurements */}
+        <div className="bg-surface rounded-2xl p-6 space-y-4">
+          <h2 className="text-lg font-display text-textPrimary">Body Measurements (in)</h2>
+
+          <div className="grid grid-cols-2 gap-3">
+            {MEASUREMENT_FIELDS.map((field) => (
+              <div key={field.key}>
+                <label className="block text-xs font-medium text-textMuted mb-1">{field.label}</label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.1"
+                  placeholder="in"
+                  value={measurementInputs[field.key] ?? ''}
+                  onChange={(e) =>
+                    setMeasurementInputs((prev) => ({ ...prev, [field.key]: e.target.value }))
+                  }
+                  className="w-full rounded-xl border border-surface2 bg-surface2 px-3 py-2 text-sm text-textPrimary placeholder-textMuted focus:outline-none focus:border-accent transition-colors"
+                />
+              </div>
+            ))}
+          </div>
+
+          <button
+            onClick={() => {
+              const hasAny = MEASUREMENT_FIELDS.some(
+                (f) => measurementInputs[f.key] !== undefined && measurementInputs[f.key] !== '' && !isNaN(Number(measurementInputs[f.key]))
+              );
+              if (!hasAny) return;
+              const entry: BodyMeasurement = { id: crypto.randomUUID(), date: new Date().toISOString() };
+              for (const field of MEASUREMENT_FIELDS) {
+                const val = measurementInputs[field.key];
+                if (val !== undefined && val !== '' && !isNaN(Number(val))) {
+                  entry[field.key] = Number(val);
+                }
+              }
+              saveBodyMeasurement(entry);
+              setMeasurements(getBodyMeasurements());
+              setMeasurementInputs({});
+            }}
+            disabled={!MEASUREMENT_FIELDS.some(
+              (f) => measurementInputs[f.key] !== undefined && measurementInputs[f.key] !== '' && !isNaN(Number(measurementInputs[f.key]))
+            )}
+            className="w-full px-4 py-2.5 rounded-xl text-sm font-medium bg-accent text-black disabled:opacity-40 hover:bg-accent/90 transition-colors"
+          >
+            Log Measurements
+          </button>
+
+          <div>
+            <label className="block text-sm font-medium text-textMuted mb-1.5">Trend chart for</label>
+            <select
+              value={selectedMeasurementField}
+              onChange={(e) => setSelectedMeasurementField(e.target.value)}
+              className="w-full rounded-xl border border-surface2 bg-surface2 px-4 py-2.5 text-sm text-textPrimary focus:outline-none focus:border-accent transition-colors"
+            >
+              {MEASUREMENT_FIELDS.map((f) => (
+                <option key={f.key} value={f.key} className="bg-surface2 text-textPrimary">
+                  {f.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {(() => {
+            const filtered = measurements
+              .filter((m) => m[selectedMeasurementField as keyof BodyMeasurement] !== undefined)
+              .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+            if (filtered.length >= 2) {
+              return (
+                <ResponsiveContainer width="100%" height={240}>
+                  <LineChart
+                    data={filtered.map((m) => ({
+                      date: formatDate(m.date),
+                      value: m[selectedMeasurementField as keyof BodyMeasurement] as number,
+                    }))}
+                    margin={{ top: 4, right: 8, bottom: 4, left: 0 }}
+                  >
+                    <CartesianGrid strokeDasharray="3 3" stroke="#363b46" />
+                    <XAxis dataKey="date" tick={{ fontSize: 12, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 12, fill: '#9ca3af' }} axisLine={false} tickLine={false} width={48} unit=" in" />
+                    <Tooltip
+                      contentStyle={{ borderRadius: '0.75rem', border: '1px solid #363b46', background: '#2a2e37', fontSize: '0.875rem', color: '#f1f1ef' }}
+                      labelStyle={{ color: '#9ca3af' }}
+                      formatter={(value) => [`${Number(value)} in`, MEASUREMENT_FIELDS.find((f) => f.key === selectedMeasurementField)?.label ?? selectedMeasurementField]}
+                    />
+                    <Line type="monotone" dataKey="value" stroke="#d4ff4f" strokeWidth={2} dot={{ r: 4, fill: '#d4ff4f', strokeWidth: 0 }} activeDot={{ r: 6 }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              );
+            }
+            return (
+              <p className="text-textMuted text-sm text-center py-4">
+                Log at least 2 entries with this measurement to see a trend chart.
+              </p>
+            );
+          })()}
+
+          {measurements.length > 0 && (
+            <ul className="space-y-2">
+              {measurements
+                .slice()
+                .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+                .slice(0, 5)
+                .map((entry) => {
+                  const summary = MEASUREMENT_FIELDS
+                    .filter((f) => entry[f.key] !== undefined)
+                    .map((f) => `${f.label}: ${entry[f.key]}in`)
+                    .join(', ');
+                  return (
+                    <li key={entry.id} className="flex items-start justify-between text-sm gap-2">
+                      <div>
+                        <span className="text-textMuted block">{formatDateLong(entry.date)}</span>
+                        <span className="text-textPrimary text-xs">{summary}</span>
+                      </div>
+                      <button
+                        onClick={() => {
+                          deleteBodyMeasurement(entry.id);
+                          setMeasurements(getBodyMeasurements());
+                        }}
+                        className="text-xs text-danger hover:opacity-70 transition-opacity shrink-0 mt-0.5"
+                        aria-label="Delete measurement"
+                      >
+                        Delete
+                      </button>
+                    </li>
+                  );
+                })}
             </ul>
           )}
         </div>

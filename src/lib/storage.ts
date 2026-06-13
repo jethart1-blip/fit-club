@@ -1,4 +1,4 @@
-import type { UserProfile, Program, WorkoutLog, MuscleGroupSlot, CustomExercise, CustomWorkout, CustomSplit, ProgressPhoto, WeightEntry } from '../types';
+import type { UserProfile, Program, WorkoutLog, MuscleGroupSlot, CustomExercise, CustomWorkout, CustomSplit, ProgressPhoto, WeightEntry, BodyMeasurement } from '../types';
 
 const KEYS = {
   profile: 'fitclub_profile',
@@ -10,6 +10,7 @@ const KEYS = {
   customSplits: 'fitclub_customSplits',
   progressPhotos: 'fitclub_progressPhotos',
   weightEntries: 'fitclub_weightEntries',
+  bodyMeasurements: 'fitclub_bodyMeasurements',
 } as const;
 
 export function getProfile(): UserProfile | null {
@@ -190,6 +191,28 @@ export function deleteWeightEntry(id: string): void {
   const existing = getWeightEntries();
   const filtered = existing.filter((e) => e.id !== id);
   localStorage.setItem(KEYS.weightEntries, JSON.stringify(filtered));
+}
+
+export function getBodyMeasurements(): BodyMeasurement[] {
+  try {
+    const raw = localStorage.getItem(KEYS.bodyMeasurements);
+    if (raw === null) return [];
+    return JSON.parse(raw) as BodyMeasurement[];
+  } catch {
+    return [];
+  }
+}
+
+export function saveBodyMeasurement(entry: BodyMeasurement): void {
+  const existing = getBodyMeasurements();
+  existing.push(entry);
+  localStorage.setItem(KEYS.bodyMeasurements, JSON.stringify(existing));
+}
+
+export function deleteBodyMeasurement(id: string): void {
+  const existing = getBodyMeasurements();
+  const filtered = existing.filter((e) => e.id !== id);
+  localStorage.setItem(KEYS.bodyMeasurements, JSON.stringify(filtered));
 }
 
 export function swapExercise(dayId: string, slot: MuscleGroupSlot, newExerciseId: string): void {
