@@ -3,9 +3,11 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 
 import { Layout } from '@/components/Layout'
 import { History } from '@/pages/History'
+import { Home } from '@/pages/Home'
 import { Onboarding } from '@/pages/Onboarding'
 import { Settings } from '@/pages/Settings'
 import { TodaysWorkout } from '@/pages/TodaysWorkout'
+import { getProfile } from '@/lib/storage'
 
 const Progress = lazy(() =>
   import('@/pages/Progress').then(m => ({ default: m.Progress }))
@@ -22,6 +24,14 @@ function App() {
     >
       <Routes>
         <Route path="/onboarding" element={<Onboarding />} />
+        <Route
+          path="/"
+          element={
+            <Layout>
+              <Home />
+            </Layout>
+          }
+        />
         <Route
           path="/today"
           element={
@@ -54,7 +64,10 @@ function App() {
             </Layout>
           }
         />
-        <Route path="*" element={<Navigate to="/onboarding" replace />} />
+        <Route
+          path="*"
+          element={<Navigate to={getProfile() ? '/' : '/onboarding'} replace />}
+        />
       </Routes>
     </Suspense>
   )

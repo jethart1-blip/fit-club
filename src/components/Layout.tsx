@@ -1,6 +1,7 @@
 import { NavLink } from 'react-router-dom'
 
 const navLinks = [
+  { to: '/', label: 'Home', end: true },
   { to: '/today', label: 'Today' },
   { to: '/history', label: 'History' },
   { to: '/progress', label: 'Progress' },
@@ -17,10 +18,11 @@ export function Layout({ children }: LayoutProps) {
       <nav className="sticky top-0 z-10 bg-surface border-b border-surface2">
         <div className="mx-auto max-w-3xl px-4">
           <div className="flex h-14 items-center gap-6">
-            {navLinks.map(({ to, label }) => (
+            {navLinks.map(({ to, label, end }) => (
               <NavLink
                 key={to}
                 to={to}
+                end={end}
                 className={({ isActive }) =>
                   isActive
                     ? 'border-b-2 border-accent pb-0.5 text-sm font-display font-semibold text-accent tracking-wide uppercase'
