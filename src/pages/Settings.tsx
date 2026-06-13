@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { UserProfile, EquipmentType, Goal, SplitId, CustomSplit } from '../types';
-import { getProfile, saveProfile, saveProgram, setCurrentDayIndex, clearAllData, getCustomWorkouts, getCustomSplits, exportAllData, importAllData } from '../lib/storage';
+import { getProfile, saveProfile, saveProgram, setCurrentDayIndex, clearAllData, getCustomSplits, exportAllData, importAllData } from '../lib/storage';
 import { generateProgram } from '../lib/generateProgram';
 import { SPLITS } from '../data/splits';
 import { getTheme, setTheme } from '../lib/theme';
@@ -48,7 +48,6 @@ export function Settings() {
   const [selectedCustomSplitId, setSelectedCustomSplitId] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState('');
   const [warningMessage, setWarningMessage] = useState('');
-  const [customWorkoutCount, setCustomWorkoutCount] = useState(0);
   const [customSplits, setCustomSplits] = useState<CustomSplit[]>([]);
   const [importError, setImportError] = useState('');
   const [theme, setThemeState] = useState<Theme>(() => getTheme());
@@ -63,7 +62,6 @@ export function Settings() {
     setProfile(p);
     setSelectedSplitId(p.splitId);
     setSelectedCustomSplitId(p.customSplitId ?? null);
-    setCustomWorkoutCount(getCustomWorkouts().length);
     setCustomSplits(getCustomSplits());
   }, [navigate]);
 
