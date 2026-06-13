@@ -52,6 +52,13 @@ export function Settings() {
   const [importError, setImportError] = useState('');
   const [theme, setThemeState] = useState<Theme>(() => getTheme());
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [editAge, setEditAge] = useState('');
+  const [editWeight, setEditWeight] = useState('');
+  const [editHeight, setEditHeight] = useState('');
+  const [editDaysPerWeek, setEditDaysPerWeek] = useState('');
+  const [editEquipment, setEditEquipment] = useState<EquipmentType[]>([]);
+  const [profileSaveMessage, setProfileSaveMessage] = useState('');
+  const [profileSaveError, setProfileSaveError] = useState('');
 
   useEffect(() => {
     const p = getProfile();
@@ -63,12 +70,68 @@ export function Settings() {
     setSelectedSplitId(p.splitId);
     setSelectedCustomSplitId(p.customSplitId ?? null);
     setCustomSplits(getCustomSplits());
+    setEditAge(String(p.age));
+    setEditWeight(String(p.weightLbs));
+    setEditHeight(String(p.heightInches));
+    setEditDaysPerWeek(String(p.daysPerWeek));
+    setEditEquipment(p.equipment);
   }, [navigate]);
 
   function showSuccess(msg: string) {
     setSuccessMessage(msg);
     setWarningMessage('');
     setTimeout(() => setSuccessMessage(''), 4000);
+  }
+
+  function toggleEditEquipment(value: EquipmentType) {
+    setEditEquipment((prev) =>
+      prev.includes(value) ? prev.filter((e) => e !== value) : [...prev, value]
+    );
+  }
+
+  function getProfileEditErrors(): Record<string, string> {
+    const errors: Record<string, string> = {};
+    const a = Number(editAge);
+    const w = Number(editWeight);
+    const h = Number(editHeight);
+    const d = Number(editDaysPerWeek);
+    if (isNaN(a) || a < 13 || a > 100) errors.age = 'Enter a value between 13 and 100.';
+    if (isNaN(w) || w < 50 || w > 600) errors.weight = 'Enter a value between 50 and 600.';
+    if (isNaN(h) || h < 36 || h > 96) errors.height = 'Enter a value between 36 and 96.';
+    if (isNaN(d) || d < 1 || d > 7) errors.days = 'Enter a value between 1 and 7.';
+    if (editEquipment.length === 0) errors.equipment = 'Select at least one equipment type.';
+    return errors;
+  }
+
+  function handleSaveProfileEdits() {
+    if (!profile) return;
+    const errors = getProfileEditErrors();
+    if (Object.keys(errors).length > 0) {
+      setProfileSaveError('Please fix the highlighted fields.');
+      setProfileSaveMessage('');
+      return;
+    }
+    const updated: UserProfile = {
+      ...profile,
+      age: Number(editAge),
+      weightLbs: Number(editWeight),
+      heightInches: Number(editHeight),
+      daysPerWeek: Number(editDaysPerWeek),
+      equipment: editEquipment,
+    };
+    try {
+      const result = generateProgram(updated);
+      saveProfile(updated);
+      saveProgram(result);
+      setCurrentDayIndex(0);
+      setProfile(updated);
+      setProfileSaveError('');
+      setProfileSaveMessage('Profile updated! Your program has been regenerated.');
+      setTimeout(() => setProfileSaveMessage(''), 4000);
+    } catch (err) {
+      setProfileSaveError(err instanceof Error ? err.message : 'Failed to update profile.');
+      setProfileSaveMessage('');
+    }
   }
 
   function handleSaveSplit() {
@@ -217,6 +280,76 @@ export function Settings() {
               </div>
             ))}
           </div>
+        </div>
+
+        {/* Edit Profile */}
+        <div className="bg-surface rounded-2xl p-6 mb-6">
+          <h2 className="text-sm font-semibold text-textMuted mb-1">✏️ Edit Profile</h2>
+          <p className="text-xs text-textMuted mb-4">Update your stats. Changing days/equipment will regenerate your program.</p>
+          {(() => {
+            const errors = getProfileEditErrors();
+            const fields = [
+              { label: 'Age', value: editAge, setter: setEditAge, errorKey: 'age' },
+              { label: 'Weight (lbs)', value: editWeight, setter: setEditWeight, errorKey: 'weight' },
+              { label: 'Height (in)', value: editHeight, setter: setEditHeight, errorKey: 'height' },
+              { label: 'Days/week', value: editDaysPerWeek, setter: setEditDaysPerWeek, errorKey: 'days' },
+            ];
+            return (
+              <div className="space-y-3">
+                <div className="grid grid-cols-2 gap-3">
+                  {fields.map(({ label, value, setter, errorKey }) => {
+                    const err = errors[errorKey];
+                    return (
+                      <div key={label}>
+                        <label className="block text-xs font-medium text-textMuted mb-1">{label}</label>
+                        <input
+                          type="number"
+                          value={value}
+                          onChange={(e) => setter(e.target.value)}
+                          className={`w-full rounded-xl border-2 px-3 py-2 text-sm bg-surface2 text-textPrimary focus:outline-none transition-colors ${
+                            err ? 'border-danger focus:border-danger' : 'border-surface2 focus:border-accent'
+                          }`}
+                        />
+                        {err && <p className="text-xs text-danger mt-1">{err}</p>}
+                      </div>
+                    );
+                  })}
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-textMuted mb-2">Equipment</label>
+                  <div className="flex flex-wrap gap-2">
+                    {(Object.keys(EQUIPMENT_LABELS) as EquipmentType[]).map((eq) => (
+                      <button
+                        key={eq}
+                        type="button"
+                        onClick={() => toggleEditEquipment(eq)}
+                        className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-colors ${
+                          editEquipment.includes(eq)
+                            ? 'bg-accent text-pageBg'
+                            : 'bg-surface2 text-textMuted hover:text-textPrimary'
+                        }`}
+                      >
+                        {EQUIPMENT_LABELS[eq]}
+                      </button>
+                    ))}
+                  </div>
+                  {errors.equipment && <p className="text-xs text-danger mt-1">{errors.equipment}</p>}
+                </div>
+                <button
+                  onClick={handleSaveProfileEdits}
+                  className="w-full bg-accent hover:bg-accent/90 active:bg-accent/80 active:scale-95 transition-transform text-pageBg font-semibold rounded-xl py-3 text-sm transition-colors"
+                >
+                  Save Changes
+                </button>
+                {profileSaveMessage && (
+                  <p className="text-center text-sm text-accent font-medium">{profileSaveMessage}</p>
+                )}
+                {profileSaveError && (
+                  <p className="text-center text-sm text-danger font-medium">{profileSaveError}</p>
+                )}
+              </div>
+            );
+          })()}
         </div>
 
         {/* Change Split */}
