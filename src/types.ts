@@ -32,7 +32,8 @@ export type SplitId =
   | "ulppl"
   | "torso_limbs"
   | "powerbuilding"
-  | "strength_athlete";
+  | "strength_athlete"
+  | "custom";
 
 export interface UserProfile {
   name?: string;

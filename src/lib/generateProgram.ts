@@ -1,8 +1,57 @@
 import type { UserProfile, Program, ProgramDay, ProgramExercise } from "../types";
 import { EXERCISE_LIBRARY } from "../data/exercises";
 import { SPLITS } from "../data/splits";
+import { getCustomWorkouts, getCustomExercises } from './storage';
 
 export function generateProgram(profile: UserProfile): Program {
+  if (profile.splitId === 'custom') {
+    const customWorkouts = getCustomWorkouts();
+    if (customWorkouts.length === 0) {
+      throw new Error('No custom workouts found. Build a workout in the Workout Builder first.');
+    }
+    const customExercises = getCustomExercises();
+    const allExercises = [...EXERCISE_LIBRARY, ...customExercises];
+
+    const days: ProgramDay[] = customWorkouts.map((workout) => {
+      const exercises: ProgramExercise[] = workout.exercises.map((item) => {
+        const def = allExercises.find((e) => e.id === item.exerciseId);
+        const slot = def?.slot ?? 'chest';
+        let alternativeExerciseIds: string[] = [];
+        if (def && !('custom' in def && def.custom)) {
+          alternativeExerciseIds = EXERCISE_LIBRARY
+            .filter(
+              (e) =>
+                e.slot === slot &&
+                e.equipment === def.equipment &&
+                e.id !== def.id &&
+                profile.equipment.includes(e.equipment)
+            )
+            .map((e) => e.id);
+        }
+        return {
+          slot,
+          exerciseId: item.exerciseId,
+          alternativeExerciseIds,
+          targetSets: item.targetSets,
+          targetRepsMin: item.targetRepsMin,
+          targetRepsMax: item.targetRepsMax,
+        };
+      });
+      return {
+        id: workout.id,
+        name: workout.name,
+        exercises,
+        restSeconds: 90,
+      };
+    });
+
+    return {
+      splitId: profile.splitId,
+      days,
+      createdAt: new Date().toISOString(),
+    };
+  }
+
   if (profile.equipment.length === 0) {
     throw new Error('Profile has no equipment selected');
   }

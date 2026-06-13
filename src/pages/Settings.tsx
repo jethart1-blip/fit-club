@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { UserProfile, EquipmentType, Goal, SplitId } from '../types';
-import { getProfile, saveProfile, saveProgram, setCurrentDayIndex, clearAllData } from '../lib/storage';
+import { getProfile, saveProfile, saveProgram, setCurrentDayIndex, clearAllData, getCustomWorkouts } from '../lib/storage';
 import { generateProgram } from '../lib/generateProgram';
 import { SPLITS } from '../data/splits';
 
@@ -42,6 +42,7 @@ export function Settings() {
   const [selectedSplitId, setSelectedSplitId] = useState<SplitId | null>(null);
   const [successMessage, setSuccessMessage] = useState('');
   const [warningMessage, setWarningMessage] = useState('');
+  const [customWorkoutCount, setCustomWorkoutCount] = useState(0);
 
   useEffect(() => {
     const p = getProfile();
@@ -51,6 +52,7 @@ export function Settings() {
     }
     setProfile(p);
     setSelectedSplitId(p.splitId);
+    setCustomWorkoutCount(getCustomWorkouts().length);
   }, [navigate]);
 
   function showSuccess(msg: string) {
@@ -62,31 +64,39 @@ export function Settings() {
   function handleSaveSplit() {
     if (!profile || !selectedSplitId || selectedSplitId === profile.splitId) return;
     const updated: UserProfile = { ...profile, splitId: selectedSplitId };
-    saveProfile(updated);
-    const result = generateProgram(updated);
-    saveProgram(result);
-    setCurrentDayIndex(0);
-    setProfile(updated);
-    showSuccess('Split updated! Your program has been regenerated.');
+    try {
+      const result = generateProgram(updated);
+      saveProfile(updated);
+      saveProgram(result);
+      setCurrentDayIndex(0);
+      setProfile(updated);
+      showSuccess('Split updated! Your program has been regenerated.');
+    } catch (err) {
+      setWarningMessage(err instanceof Error ? err.message : 'Failed to generate program.');
+    }
   }
 
   function handleRegenerate() {
     if (!profile) return;
-    const result = generateProgram(profile);
-    saveProgram(result);
-    setCurrentDayIndex(0);
-    const hasEmptyDay = result.days.some((d) => d.exercises.length === 0);
-    if (hasEmptyDay) {
-      setWarningMessage(
-        'Warning: with your current equipment, some days have no exercises. Consider selecting more equipment types.'
-      );
-      setSuccessMessage('Program regenerated!');
-      setTimeout(() => {
-        setSuccessMessage('');
-        setWarningMessage('');
-      }, 6000);
-    } else {
-      showSuccess('Program regenerated!');
+    try {
+      const result = generateProgram(profile);
+      saveProgram(result);
+      setCurrentDayIndex(0);
+      const hasEmptyDay = result.days.some((d) => d.exercises.length === 0);
+      if (hasEmptyDay) {
+        setWarningMessage(
+          'Warning: with your current equipment, some days have no exercises. Consider selecting more equipment types.'
+        );
+        setSuccessMessage('Program regenerated!');
+        setTimeout(() => {
+          setSuccessMessage('');
+          setWarningMessage('');
+        }, 6000);
+      } else {
+        showSuccess('Program regenerated!');
+      }
+    } catch (err) {
+      setWarningMessage(err instanceof Error ? err.message : 'Failed to generate program.');
     }
   }
 
@@ -136,29 +146,36 @@ export function Settings() {
           <h2 className="text-sm font-semibold text-textMuted mb-1">Change Split</h2>
           <p className="text-xs text-textMuted mb-4">Select a new training structure.</p>
           <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
-            {Object.values(SPLITS).map((split) => (
-              <label key={split.id} className={splitCardClass(selectedSplitId === split.id)}>
-                <input
-                  type="radio"
-                  name="splitId"
-                  value={split.id}
-                  checked={selectedSplitId === split.id}
-                  onChange={() => setSelectedSplitId(split.id)}
-                  className="sr-only"
-                />
-                <div>
-                  <div>{split.name}</div>
-                  <div
-                    className={`text-xs font-normal mt-0.5 ${
-                      selectedSplitId === split.id ? 'text-accent' : 'text-textMuted'
-                    }`}
-                  >
-                    {split.description}
+            {Object.values(SPLITS)
+              .filter((split) => split.id !== 'custom' || customWorkoutCount > 0)
+              .map((split) => (
+                <label key={split.id} className={splitCardClass(selectedSplitId === split.id)}>
+                  <input
+                    type="radio"
+                    name="splitId"
+                    value={split.id}
+                    checked={selectedSplitId === split.id}
+                    onChange={() => setSelectedSplitId(split.id)}
+                    className="sr-only"
+                  />
+                  <div>
+                    <div>{split.name}</div>
+                    <div
+                      className={`text-xs font-normal mt-0.5 ${
+                        selectedSplitId === split.id ? 'text-accent' : 'text-textMuted'
+                      }`}
+                    >
+                      {split.description}
+                    </div>
                   </div>
-                </div>
-              </label>
-            ))}
+                </label>
+              ))}
           </div>
+          {customWorkoutCount === 0 && (
+            <p className="mt-3 text-xs text-textMuted">
+              Build a workout in the Workout Builder to unlock &ldquo;My Custom Split&rdquo;.
+            </p>
+          )}
           <button
             onClick={handleSaveSplit}
             disabled={!splitChanged}

@@ -321,4 +321,11 @@ export const SPLITS: Record<SplitId, SplitDefinition> = {
       },
     ],
   },
+
+  custom: {
+    id: "custom",
+    name: "My Custom Split",
+    description: "Built from the workouts you created in the Workout Builder.",
+    dayTemplates: [],
+  },
 };
