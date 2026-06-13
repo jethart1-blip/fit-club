@@ -1,9 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import type { UserProfile, Program, WorkoutLog, MuscleGroupSlot } from '../types';
+import type { UserProfile, Program, WorkoutLog, MuscleGroupSlot, ProgramDay } from '../types';
 import { getProfile, getProgram, getWorkoutLogs, getCurrentDayIndex } from '../lib/storage';
 import { SPLITS } from '../data/splits';
 import { getDaysSinceLastTrained } from '../lib/getPRs';
+
+const RING_RADIUS = 38;
+const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
 
 const MUSCLE_NAMES: Record<MuscleGroupSlot, string> = {
   chest: 'Chest',
@@ -23,6 +26,13 @@ const ALL_MUSCLE_GROUPS: MuscleGroupSlot[] = [
   'chest', 'back', 'shoulders', 'biceps', 'triceps',
   'quads', 'hamstrings', 'glutes', 'calves', 'abs', 'forearms',
 ];
+
+function getWeeklyStatusLabel(ratio: number): string {
+  if (ratio >= 1) return 'Crushing It! 🔥';
+  if (ratio >= 0.5) return 'On Track';
+  if (ratio > 0) return 'Getting Started';
+  return "Let's Go";
+}
 
 function getMuscleColor(days: number | null): string {
   if (days === null || days >= 5) return 'bg-surface2 text-textMuted';
@@ -100,6 +110,11 @@ function computeStreak(logs: WorkoutLog[]): number {
   return streak;
 }
 
+function getMuscleGroupSummary(day: ProgramDay): string {
+  const uniqueSlots = Array.from(new Set(day.exercises.map((e) => e.slot)));
+  return uniqueSlots.map((slot) => MUSCLE_NAMES[slot]).join(', ');
+}
+
 function formatDate(isoString: string): string {
   return new Date(isoString).toLocaleDateString('en-US', {
     weekday: 'short',
@@ -169,22 +184,30 @@ export function Home() {
               <p className="text-xs font-semibold text-textMuted uppercase tracking-wide">
                 This Week
               </p>
-              <span className="text-xs font-display text-accent">{weekCount}/{daysPerWeek}</span>
             </div>
-            <p className="text-2xl font-display text-textPrimary leading-none">
-              {weekCount}
-              <span className="text-sm font-normal text-textMuted ml-1">workouts</span>
-            </p>
-            {/* Progress bar */}
-            <div className="h-1.5 rounded-full bg-surface2 overflow-hidden">
-              <div
-                className="h-full rounded-full bg-accent transition-all duration-500"
-                style={{ width: `${weekProgress * 100}%` }}
-              />
+            <div className="flex items-center gap-4">
+              <div className="relative w-20 h-20 shrink-0">
+                <svg className="w-full h-full -rotate-90" viewBox="0 0 96 96" aria-label={`Weekly progress: ${weekCount} of ${daysPerWeek} workouts`}>
+                  <circle cx="48" cy="48" r={RING_RADIUS} fill="none" stroke="var(--color-ring-track)" strokeWidth="6" />
+                  <circle
+                    cx="48" cy="48" r={RING_RADIUS} fill="none" stroke="var(--color-accent)" strokeWidth="6" strokeLinecap="round"
+                    strokeDasharray={RING_CIRCUMFERENCE}
+                    strokeDashoffset={RING_CIRCUMFERENCE * (1 - weekProgress)}
+                    style={{ transition: 'stroke-dashoffset 0.5s ease' }}
+                  />
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="text-xl font-display text-textPrimary leading-none">{weekCount}</span>
+                  <span className="text-[10px] text-textMuted leading-none mt-0.5">of {daysPerWeek}</span>
+                </div>
+              </div>
+              <div>
+                <p className="text-sm font-display text-textPrimary leading-tight">{getWeeklyStatusLabel(weekProgress)}</p>
+                <p className="text-xs text-textMuted mt-1 leading-tight">
+                  {weekCount} of {daysPerWeek} workouts this week
+                </p>
+              </div>
             </div>
-            <p className="text-xs text-textMuted leading-tight">
-              {weekCount} of {daysPerWeek} workouts this week
-            </p>
           </div>
 
           {/* Streak */}
@@ -240,6 +263,31 @@ export function Home() {
           </div>
           <div className="w-9 h-9 rounded-full bg-accent/10 flex items-center justify-center text-accent text-lg">
             ▶
+          </div>
+        </div>
+
+        {/* This Week */}
+        <div className="bg-surface rounded-2xl p-5 space-y-3">
+          <p className="text-xs font-semibold text-textMuted uppercase tracking-wide">
+            This Week
+          </p>
+          <div className="space-y-2">
+            {Array.from({ length: profile.daysPerWeek }, (_, i) => {
+              const upcomingDay = program.days[(dayIndex + i) % program.days.length];
+              return (
+                <div key={i} className="flex items-center justify-between gap-3 py-1">
+                  <div>
+                    <p className="text-sm font-medium text-textPrimary">{upcomingDay.name}</p>
+                    <p className="text-xs text-textMuted mt-0.5">{getMuscleGroupSummary(upcomingDay)}</p>
+                  </div>
+                  {i === 0 && (
+                    <span className="text-xs font-semibold text-accent bg-accent/10 px-2 py-0.5 rounded-full shrink-0">
+                      Next
+                    </span>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
 
