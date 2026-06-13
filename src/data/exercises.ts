@@ -10,6 +10,7 @@ export const EXERCISE_LIBRARY: Exercise[] = [
   { id: "chest_press_machine", name: "Chest Press Machine", slot: "chest", equipment: "machines" },
   { id: "pec_deck", name: "Pec Deck", slot: "chest", equipment: "machines" },
   { id: "cable_fly_mid", name: "Cable Fly (Mid-Level)", slot: "chest", equipment: "cables" },
+  { id: "med_ball_chest_pass", name: "Med Ball Chest Pass", slot: "chest", equipment: "bodyweight" },
   { id: "push_up", name: "Push-Up", slot: "chest", equipment: "bodyweight" },
   { id: "dips_chest", name: "Dips", slot: "chest", equipment: "bodyweight" },
 
@@ -33,6 +34,7 @@ export const EXERCISE_LIBRARY: Exercise[] = [
   { id: "lateral_raise", name: "Lateral Raise", slot: "shoulders", equipment: "dumbbells" },
   { id: "shoulder_press_machine", name: "Shoulder Press Machine", slot: "shoulders", equipment: "machines" },
   { id: "cable_lateral_raise", name: "Cable Lateral Raise", slot: "shoulders", equipment: "cables" },
+  { id: "med_ball_overhead_throw", name: "Med Ball Overhead Throw", slot: "shoulders", equipment: "bodyweight" },
   { id: "pike_push_up", name: "Pike Push-Up", slot: "shoulders", equipment: "bodyweight" },
 
   // BICEPS
@@ -60,6 +62,7 @@ export const EXERCISE_LIBRARY: Exercise[] = [
   { id: "bulgarian_split_squat", name: "Bulgarian Split Squat", slot: "quads", equipment: "dumbbells" },
   { id: "leg_press", name: "Leg Press", slot: "quads", equipment: "machines" },
   { id: "leg_extension", name: "Leg Extension", slot: "quads", equipment: "machines" },
+  { id: "med_ball_squat_toss", name: "Med Ball Squat Toss", slot: "quads", equipment: "bodyweight" },
   { id: "air_squat", name: "Air Squat", slot: "quads", equipment: "bodyweight" },
   { id: "walking_lunge_quads", name: "Walking Lunge", slot: "quads", equipment: "bodyweight" },
 
@@ -88,6 +91,8 @@ export const EXERCISE_LIBRARY: Exercise[] = [
   { id: "barbell_standing_calf_raise", name: "Barbell Standing Calf Raise", slot: "calves", equipment: "barbell" },
 
   // ABS
+  { id: "med_ball_slam", name: "Med Ball Slam", slot: "abs", equipment: "bodyweight" },
+  { id: "med_ball_russian_twist", name: "Med Ball Russian Twist", slot: "abs", equipment: "bodyweight" },
   { id: "crunch", name: "Crunch", slot: "abs", equipment: "bodyweight" },
   { id: "plank", name: "Plank", slot: "abs", equipment: "bodyweight" },
   { id: "hanging_leg_raise", name: "Hanging Leg Raise", slot: "abs", equipment: "bodyweight" },
@@ -124,6 +129,7 @@ export const EXERCISE_LIBRARY: Exercise[] = [
   { id: "high_row_machine", name: "High Row Machine", slot: "back", equipment: "machines" },
   { id: "straight_arm_pulldown", name: "Straight Arm Pulldown", slot: "back", equipment: "cables" },
   { id: "inverted_row", name: "Inverted Row", slot: "back", equipment: "bodyweight" },
+  { id: "med_ball_rotational_throw", name: "Med Ball Rotational Throw", slot: "back", equipment: "bodyweight" },
 
   // SHOULDERS (additional)
   { id: "behind_neck_press", name: "Behind Neck Press", slot: "shoulders", equipment: "barbell" },
