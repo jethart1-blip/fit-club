@@ -38,7 +38,7 @@ export function History() {
       <div className="min-h-screen bg-pageBg p-4">
         <div className="max-w-lg mx-auto">
           <div className="bg-surface rounded-2xl p-6 mb-4">
-            <h1 className="text-2xl font-display text-textPrimary">Workout History</h1>
+            <h1 className="text-2xl font-display text-textPrimary">📅 Workout History</h1>
           </div>
           <div className="bg-surface rounded-2xl p-8 text-center">
             <p className="text-textMuted text-base">No workouts logged yet.</p>
@@ -53,7 +53,7 @@ export function History() {
     <div className="min-h-screen bg-pageBg p-4">
       <div className="max-w-lg mx-auto space-y-4">
         <div className="bg-surface rounded-2xl p-6">
-          <h1 className="text-2xl font-display text-textPrimary">Workout History</h1>
+          <h1 className="text-2xl font-display text-textPrimary">📅 Workout History</h1>
           <p className="text-sm text-textMuted mt-1">{logs.length} workout{logs.length !== 1 ? 's' : ''} logged</p>
         </div>
 

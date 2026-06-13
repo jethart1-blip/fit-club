@@ -128,7 +128,7 @@ export function Settings() {
   return (
     <div className="min-h-screen bg-pageBg p-4">
       <div className="max-w-sm mx-auto pt-8 pb-12">
-        <h1 className="text-2xl font-display text-textPrimary mb-1">Settings</h1>
+        <h1 className="text-2xl font-display text-textPrimary mb-1">⚙️ Settings</h1>
         <p className="text-textMuted text-sm mb-8">Manage your profile and program.</p>
 
         {/* Current Profile */}

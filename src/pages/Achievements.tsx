@@ -9,8 +9,8 @@ const TIER_BADGE: Record<Tier, string> = {
   Bronze: 'bg-amber-700/20 text-amber-600',
   Silver: 'bg-slate-400/20 text-slate-300',
   Gold: 'bg-yellow-400/20 text-yellow-400',
-  Platinum: 'bg-cyan-300/20 text-cyan-300',
-  Diamond: 'bg-violet-400/20 text-violet-400',
+  Platinum: 'bg-accentCool/20 text-accentCool',
+  Diamond: 'bg-accentViolet/20 text-accentViolet',
 };
 
 export function Achievements() {

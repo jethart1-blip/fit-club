@@ -203,7 +203,7 @@ export function Home() {
             </p>
             <div className="h-1.5 rounded-full bg-surface2 overflow-hidden">
               <div
-                className="h-full rounded-full bg-accent2 transition-all duration-500"
+                className="h-full rounded-full bg-accentWarm transition-all duration-500"
                 style={{ width: streak > 0 ? `${Math.min((streak / 7) * 100, 100)}%` : '0%' }}
               />
             </div>

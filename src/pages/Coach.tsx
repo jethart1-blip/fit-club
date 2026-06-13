@@ -134,7 +134,7 @@ export function Coach() {
       {/* Header */}
       <div className="border-b border-surface2 px-4 py-3">
         <h1 className="font-display text-lg font-semibold tracking-wide text-textPrimary uppercase">
-          AI Coach
+          🤖 AI Coach
         </h1>
         <p className="text-xs text-textMuted mt-0.5">
           Ask about your training, recovery, nutrition, or progress

@@ -55,6 +55,8 @@ export function TodaysWorkout() {
   const [restTotalSeconds, setRestTotalSeconds] = useState<number>(0);
   const [saved, setSaved] = useState(false);
 
+  const [userName, setUserName] = useState<string>('');
+
   const [finisher, setFinisher] = useState<Finisher | null>(null);
   const [finisherStarted, setFinisherStarted] = useState(false);
   const [finisherRound, setFinisherRound] = useState(1);
@@ -76,6 +78,7 @@ export function TodaysWorkout() {
     const day = p.days[idx];
 
     const profile = getProfile();
+    setUserName(profile?.name ?? '');
     const isDeload = profile ? isDeloadWeek(profile) : false;
     setDeloadWeek(isDeload);
 
@@ -343,7 +346,7 @@ export function TodaysWorkout() {
       <div className="min-h-screen bg-pageBg flex flex-col items-center justify-center p-6">
         <div className="bg-surface rounded-2xl p-8 w-full max-w-sm space-y-7">
           <h1 className="font-display text-2xl text-textPrimary text-center leading-tight">
-            How are you feeling today?
+            How are you feeling today{userName ? `, ${userName}` : ''}?
           </h1>
 
           <div className="space-y-4">
@@ -393,7 +396,7 @@ export function TodaysWorkout() {
       <div className="min-h-screen bg-pageBg flex flex-col items-center justify-center p-6">
         <div className="bg-surface rounded-2xl p-8 w-full max-w-sm space-y-6 text-center">
           <h1 className="font-display text-2xl text-textPrimary leading-tight">
-            Ready to start?
+            Ready to crush it{userName ? `, ${userName}` : ''}?
           </h1>
           <p className="text-textMuted text-sm">
             We'll track how long this workout takes.

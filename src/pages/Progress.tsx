@@ -109,7 +109,7 @@ export function Progress() {
       <div className="min-h-screen bg-pageBg p-4">
         <div className="max-w-lg mx-auto space-y-4">
           <div className="bg-surface rounded-2xl p-6">
-            <h1 className="text-2xl font-display text-textPrimary">Progress</h1>
+            <h1 className="text-2xl font-display text-textPrimary">📈 Progress</h1>
           </div>
           <div className="bg-surface rounded-2xl p-8 text-center">
             <p className="text-textMuted text-base">No progress data yet — log a workout first.</p>
@@ -322,7 +322,7 @@ export function Progress() {
     <div className="min-h-screen bg-pageBg p-4">
       <div className="max-w-lg mx-auto space-y-4">
         <div className="bg-surface rounded-2xl p-6">
-          <h1 className="text-2xl font-display text-textPrimary">Progress</h1>
+          <h1 className="text-2xl font-display text-textPrimary">📈 Progress</h1>
           <p className="text-sm text-textMuted mt-1">Track your max weight and estimated 1RM over time</p>
         </div>
 
