@@ -18,6 +18,8 @@ import { EXERCISE_LIBRARY } from '../data/exercises';
 import { MUSCLE_ILLUSTRATIONS } from '../assets/muscles';
 import { FINISHERS } from '../data/finishers';
 import type { Finisher } from '../data/finishers';
+import { WARMUP_SEQUENCE } from '../data/warmups';
+import type { WarmupMove } from '../data/warmups';
 
 type SetInputs = { weight: string; reps: string; rpe: string };
 
@@ -83,6 +85,12 @@ export function TodaysWorkout() {
 
   const [expandedWarmup, setExpandedWarmup] = useState<string | null>(null);
 
+  const [warmupStarted, setWarmupStarted] = useState(false);
+  const [warmupIndex, setWarmupIndex] = useState(0);
+  const [warmupSecondsLeft, setWarmupSecondsLeft] = useState<number | null>(null);
+  const [warmupDeclined, setWarmupDeclined] = useState(false);
+  const [warmupComplete, setWarmupComplete] = useState(false);
+
   const [finisher, setFinisher] = useState<Finisher | null>(null);
   const [finisherStarted, setFinisherStarted] = useState(false);
   const [finisherRound, setFinisherRound] = useState(1);
@@ -131,6 +139,30 @@ export function TodaysWorkout() {
     setSuggestedWeights(initialSuggestedWeights);
     setFinisher(FINISHERS[Math.floor(Math.random() * FINISHERS.length)]);
   }, [navigate]);
+
+  // Warmup timer countdown
+  useEffect(() => {
+    if (warmupSecondsLeft === null || warmupSecondsLeft <= 0) return;
+    const id = setInterval(() => {
+      setWarmupSecondsLeft((prev) => {
+        if (prev === null || prev <= 1) return null;
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(id);
+  }, [warmupSecondsLeft]);
+
+  // Warmup move advancement
+  useEffect(() => {
+    if (!warmupStarted || warmupSecondsLeft !== null) return;
+    if (warmupIndex >= WARMUP_SEQUENCE.length - 1) {
+      setWarmupStarted(false);
+      setWarmupComplete(true);
+      return;
+    }
+    setWarmupIndex((i) => i + 1);
+    setWarmupSecondsLeft(30);
+  }, [warmupSecondsLeft, warmupStarted, warmupIndex]);
 
   // Rest timer countdown
   useEffect(() => {
@@ -436,6 +468,79 @@ export function TodaysWorkout() {
           >
             Start Workout
           </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (checkedIn && workoutStarted && !warmupDeclined && !warmupComplete) {
+    const currentMove: WarmupMove = WARMUP_SEQUENCE[warmupIndex];
+    const warmupRingProgress = warmupSecondsLeft !== null ? warmupSecondsLeft / 30 : 0;
+    const warmupRingOffset = RING_CIRCUMFERENCE * (1 - warmupRingProgress);
+
+    return (
+      <div className="min-h-screen bg-pageBg flex flex-col items-center justify-center p-6">
+        <div className="bg-surface rounded-2xl p-8 w-full max-w-sm space-y-6 text-center">
+          {!warmupStarted ? (
+            <>
+              <h1 className="font-display text-2xl text-textPrimary leading-tight">
+                Warm Up First?
+              </h1>
+              <p className="text-textMuted text-sm">
+                {WARMUP_SEQUENCE.length} moves, 30s each — about 4 minutes.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setWarmupStarted(true);
+                    setWarmupIndex(0);
+                    setWarmupSecondsLeft(30);
+                  }}
+                  className="flex-1 bg-accent hover:bg-accent/90 active:bg-accent/80 text-pageBg font-semibold rounded-xl py-3 text-sm transition-colors"
+                >
+                  Start Warm-Up
+                </button>
+                <button
+                  onClick={() => setWarmupDeclined(true)}
+                  className="flex-1 bg-surface2 hover:bg-surface2/80 text-textPrimary font-medium rounded-xl py-3 text-sm transition-colors"
+                >
+                  Skip
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <div>
+                <p className="text-xs text-textMuted uppercase tracking-wide font-medium">
+                  Move {warmupIndex + 1} of {WARMUP_SEQUENCE.length}
+                </p>
+                <h2 className="text-xl font-display text-textPrimary mt-1">{currentMove.name}</h2>
+                <p className="text-sm text-textMuted mt-1">{currentMove.description}</p>
+              </div>
+              <div className="flex flex-col items-center gap-2">
+                <div className="relative w-24 h-24">
+                  <svg className="w-full h-full -rotate-90" viewBox="0 0 96 96" aria-label={`Warm-up timer: ${warmupSecondsLeft ?? 0} seconds remaining`}>
+                    <circle cx="48" cy="48" r={RING_RADIUS} fill="none" stroke="#363b46" strokeWidth="6" />
+                    <circle
+                      cx="48" cy="48" r={RING_RADIUS} fill="none" stroke="#d4ff4f" strokeWidth="6" strokeLinecap="round"
+                      strokeDasharray={RING_CIRCUMFERENCE}
+                      strokeDashoffset={warmupRingOffset}
+                      style={{ transition: 'stroke-dashoffset 1s linear' }}
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className="text-2xl font-display text-textPrimary leading-none">{warmupSecondsLeft ?? 0}</span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => { setWarmupStarted(false); setWarmupDeclined(true); }}
+                  className="text-textMuted text-xs font-medium underline underline-offset-2 hover:text-textPrimary transition-colors"
+                >
+                  Skip Warm-Up
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </div>
     );
