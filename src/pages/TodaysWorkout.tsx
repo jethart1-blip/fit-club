@@ -14,7 +14,7 @@ import {
   saveExerciseNote,
 } from '../lib/storage';
 import { getSuggestedWeight } from '../lib/getSuggestedWeight';
-import { isDeloadWeek } from '../lib/getMesocycleWeek';
+import { isDeloadWeek, isTestMaxWeek } from '../lib/getMesocycleWeek';
 import { getWarmupSets } from '../lib/getWarmupSets';
 import { getPlateBreakdown } from '../lib/getPlateBreakdown';
 import { EXERCISE_LIBRARY } from '../data/exercises';
@@ -113,6 +113,7 @@ export function TodaysWorkout() {
   const [finisherSecondsLeft, setFinisherSecondsLeft] = useState<number | null>(null);
   const [finisherDeclined, setFinisherDeclined] = useState(false);
   const [deloadWeek, setDeloadWeek] = useState(false);
+  const [testMaxWeek, setTestMaxWeek] = useState(false);
 
   const [exerciseNotes, setExerciseNotes] = useState<Record<string, string>>({});
   const [expandedNotes, setExpandedNotes] = useState<string | null>(null);
@@ -133,6 +134,7 @@ export function TodaysWorkout() {
     setUserName(profile?.name ?? '');
     const isDeload = profile ? isDeloadWeek(profile) : false;
     setDeloadWeek(isDeload);
+    setTestMaxWeek(profile ? isTestMaxWeek(profile) : false);
 
     const initialInputs: Record<string, SetInputs[]> = {};
     const initialSuggestedWeights: Record<string, number | null> = {};
@@ -926,6 +928,34 @@ export function TodaysWorkout() {
                       />
                     </div>
                   )}
+
+                  {currentSlideIndex === 0 && testMaxWeek && currentGroup.length === 1 && (() => {
+                    const targetWeight = suggestedWeights[exercise.exerciseId] ?? 0;
+                    const warmups = getWarmupSets(targetWeight > 0 ? targetWeight : null);
+                    return (
+                      <div className="bg-surface2 rounded-xl p-4 space-y-3 mt-3">
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg">🏆</span>
+                          <h3 className="text-sm font-display text-textPrimary">Test Your Max Today!</h3>
+                        </div>
+                        <p className="text-xs text-textMuted">
+                          Every 8 weeks we retest your max on this lift. Warm up with the sets below, then work up to a heavy single and log it as Set 1 (use 1 rep).
+                        </p>
+                        {warmups.length > 0 && (
+                          <div className="space-y-1">
+                            {warmups.map((w, i) => (
+                              <p key={i} className="text-xs text-textPrimary">
+                                <span className="text-textMuted">Warm-up {i + 1}:</span> {w.weight} lbs &times; {w.reps} reps
+                              </p>
+                            ))}
+                            <p className="text-xs text-textPrimary">
+                              <span className="text-textMuted">Then:</span> work up in small jumps to a 1-rep max attempt
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
 
                   {/* Set input rows */}
                   <div className="space-y-2 mt-3">

@@ -23,3 +23,18 @@ export function getMesocycleWeek(profile: UserProfile): number {
 export function isDeloadWeek(profile: UserProfile): boolean {
   return getMesocycleWeek(profile) === DELOAD_WEEK;
 }
+
+const TEST_MAX_WEEK = 7;
+
+export function isTestMaxWeek(profile: UserProfile): boolean {
+  const startDateStr = profile.programStartDate ?? profile.createdAt;
+  const startDate = new Date(startDateStr);
+  if (isNaN(startDate.getTime())) return false;
+
+  const now = new Date();
+  const msPerWeek = 7 * 24 * 60 * 60 * 1000;
+  const weeksElapsed = Math.floor((now.getTime() - startDate.getTime()) / msPerWeek);
+
+  const weekInEightWeekCycle = ((weeksElapsed % 8) + 8) % 8;
+  return weekInEightWeekCycle === TEST_MAX_WEEK;
+}
