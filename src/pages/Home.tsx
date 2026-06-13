@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import type { UserProfile, Program, WorkoutLog, MuscleGroupSlot, ProgramDay } from '../types';
 import { getProfile, getProgram, getWorkoutLogs, getCurrentDayIndex } from '../lib/storage';
 import { SPLITS } from '../data/splits';
+import { getQuoteOfTheDay } from '../data/quotes';
 import { getDaysSinceLastTrained } from '../lib/getPRs';
 
 const RING_RADIUS = 38;
@@ -322,6 +323,10 @@ export function Home() {
         >
           Start Workout
         </button>
+
+        <p className="text-center text-xs text-textMuted italic px-4 pt-2">
+          "{getQuoteOfTheDay()}"
+        </p>
 
       </div>
     </div>
