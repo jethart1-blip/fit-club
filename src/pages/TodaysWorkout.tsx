@@ -32,9 +32,11 @@ export function TodaysWorkout() {
       navigate('/onboarding');
       return;
     }
-    const idx = getCurrentDayIndex();
+    const rawIdx = getCurrentDayIndex();
+    const idx = rawIdx >= p.days.length ? 0 : rawIdx;
+    if (rawIdx >= p.days.length) setCurrentDayIndex(0);
     const existingLogs = getWorkoutLogs();
-    const day = p.days[idx % p.days.length];
+    const day = p.days[idx];
 
     const initialInputs: Record<string, SetInputs[]> = {};
     for (const ex of day.exercises) {

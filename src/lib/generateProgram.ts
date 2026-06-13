@@ -3,6 +3,9 @@ import { EXERCISE_LIBRARY } from "../data/exercises";
 import { SPLITS } from "../data/splits";
 
 export function generateProgram(profile: UserProfile): Program {
+  if (profile.equipment.length === 0) {
+    throw new Error('Profile has no equipment selected');
+  }
   const split = SPLITS[profile.splitId];
   const days: ProgramDay[] = [];
 

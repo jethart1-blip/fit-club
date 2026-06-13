@@ -45,13 +45,31 @@ export function Onboarding() {
     );
   }
 
+  function getStep1FieldErrors(): Record<string, string> {
+    const errors: Record<string, string> = {};
+    const a = Number(age);
+    const w = Number(weightLbs);
+    const h = Number(heightInches);
+    const d = Number(daysPerWeek);
+    if (age !== '' && (isNaN(a) || a < 13 || a > 100)) errors.age = 'Enter a value between 13 and 100.';
+    if (weightLbs !== '' && (isNaN(w) || w < 50 || w > 600)) errors.weightLbs = 'Enter a value between 50 and 600.';
+    if (heightInches !== '' && (isNaN(h) || h < 36 || h > 96)) errors.heightInches = 'Enter a value between 36 and 96.';
+    if (daysPerWeek !== '' && (isNaN(d) || d < 1 || d > 7)) errors.daysPerWeek = 'Enter a value between 1 and 7.';
+    return errors;
+  }
+
   function canAdvance() {
     if (step === 1) {
       const a = Number(age);
       const w = Number(weightLbs);
       const h = Number(heightInches);
       const d = Number(daysPerWeek);
-      return a > 0 && w > 0 && h > 0 && d >= 1 && d <= 7;
+      return (
+        age !== '' && !isNaN(a) && a >= 13 && a <= 100 &&
+        weightLbs !== '' && !isNaN(w) && w >= 50 && w <= 600 &&
+        heightInches !== '' && !isNaN(h) && h >= 36 && h <= 96 &&
+        daysPerWeek !== '' && !isNaN(d) && d >= 1 && d <= 7
+      );
     }
     if (step === 2) return equipment.length > 0;
     if (step === 3) return goal !== '';
@@ -127,25 +145,34 @@ export function Onboarding() {
         {/* Step 1 – Basic Info */}
         {step === 1 && (
           <div className="space-y-4">
-            {[
-              { label: 'Age', value: age, setter: setAge, placeholder: 'e.g. 25', min: 1, max: 120 },
-              { label: 'Weight (lbs)', value: weightLbs, setter: setWeightLbs, placeholder: 'e.g. 185', min: 1, max: 1000 },
-              { label: 'Height (inches)', value: heightInches, setter: setHeightInches, placeholder: 'e.g. 70', min: 1, max: 120 },
-              { label: 'Days per week (1–7)', value: daysPerWeek, setter: setDaysPerWeek, placeholder: 'e.g. 4', min: 1, max: 7 },
-            ].map(({ label, value, setter, placeholder, min, max }) => (
-              <div key={label}>
-                <label className="block text-sm font-semibold text-gray-700 mb-1">{label}</label>
-                <input
-                  type="number"
-                  value={value}
-                  onChange={(e) => setter(e.target.value)}
-                  placeholder={placeholder}
-                  min={min}
-                  max={max}
-                  className="w-full rounded-xl border-2 border-gray-200 px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:border-indigo-500 transition-colors"
-                />
-              </div>
-            ))}
+            {(() => {
+              const fieldErrors = getStep1FieldErrors();
+              return [
+                { label: 'Age', value: age, setter: setAge, placeholder: 'e.g. 25', min: 13, max: 100, errorKey: 'age' },
+                { label: 'Weight (lbs)', value: weightLbs, setter: setWeightLbs, placeholder: 'e.g. 185', min: 50, max: 600, errorKey: 'weightLbs' },
+                { label: 'Height (inches)', value: heightInches, setter: setHeightInches, placeholder: 'e.g. 70', min: 36, max: 96, errorKey: 'heightInches' },
+                { label: 'Days per week (1–7)', value: daysPerWeek, setter: setDaysPerWeek, placeholder: 'e.g. 4', min: 1, max: 7, errorKey: 'daysPerWeek' },
+              ].map(({ label, value, setter, placeholder, min, max, errorKey }) => {
+                const err = fieldErrors[errorKey];
+                return (
+                  <div key={label}>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1">{label}</label>
+                    <input
+                      type="number"
+                      value={value}
+                      onChange={(e) => setter(e.target.value)}
+                      placeholder={placeholder}
+                      min={min}
+                      max={max}
+                      className={`w-full rounded-xl border-2 px-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:outline-none transition-colors ${
+                        err ? 'border-red-400 focus:border-red-500' : 'border-gray-200 focus:border-indigo-500'
+                      }`}
+                    />
+                    {err && <p className="text-xs text-red-500 mt-1">{err}</p>}
+                  </div>
+                );
+              });
+            })()}
           </div>
         )}
 

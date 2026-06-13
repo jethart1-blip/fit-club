@@ -22,10 +22,10 @@ const GOAL_LABELS: Record<Goal, string> = {
 
 function isValidProfile(p: UserProfile): boolean {
   return (
-    typeof p.age === 'number' && !isNaN(p.age) && p.age > 0 &&
-    typeof p.weightLbs === 'number' && !isNaN(p.weightLbs) && p.weightLbs > 0 &&
-    typeof p.heightInches === 'number' && !isNaN(p.heightInches) && p.heightInches > 0 &&
-    typeof p.daysPerWeek === 'number' && !isNaN(p.daysPerWeek) && p.daysPerWeek >= 1
+    typeof p.age === 'number' && !isNaN(p.age) && p.age >= 13 && p.age <= 100 &&
+    typeof p.weightLbs === 'number' && !isNaN(p.weightLbs) && p.weightLbs >= 50 && p.weightLbs <= 600 &&
+    typeof p.heightInches === 'number' && !isNaN(p.heightInches) && p.heightInches >= 36 && p.heightInches <= 96 &&
+    typeof p.daysPerWeek === 'number' && !isNaN(p.daysPerWeek) && p.daysPerWeek >= 1 && p.daysPerWeek <= 7
   );
 }
 
