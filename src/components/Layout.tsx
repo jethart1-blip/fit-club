@@ -7,6 +7,7 @@ const navLinks = [
   { to: '/progress', label: 'Progress' },
   { to: '/builder', label: 'Builder' },
   { to: '/coach', label: 'Coach' },
+  { to: '/achievements', label: 'Achievements' },
   { to: '/settings', label: 'Settings' },
 ]
 

@@ -15,6 +15,10 @@ const Progress = lazy(() =>
   import('@/pages/Progress').then(m => ({ default: m.Progress }))
 )
 
+const Achievements = lazy(() =>
+  import('@/pages/Achievements').then(m => ({ default: m.Achievements }))
+)
+
 function App() {
   return (
     <Suspense
@@ -79,6 +83,14 @@ function App() {
           element={
             <Layout>
               <Coach />
+            </Layout>
+          }
+        />
+        <Route
+          path="/achievements"
+          element={
+            <Layout>
+              <Achievements />
             </Layout>
           }
         />
