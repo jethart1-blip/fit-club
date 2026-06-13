@@ -437,9 +437,9 @@ export function TodaysWorkout() {
                     <div className="flex flex-col items-center gap-2">
                       <div className="relative w-24 h-24">
                         <svg className="w-full h-full -rotate-90" viewBox="0 0 96 96" aria-label={`Stretch timer: ${stretchSecondsLeft ?? 0} seconds remaining`}>
-                          <circle cx="48" cy="48" r={RING_RADIUS} fill="none" stroke="#363b46" strokeWidth="6" />
+                          <circle cx="48" cy="48" r={RING_RADIUS} fill="none" stroke="var(--color-ring-track)" strokeWidth="6" />
                           <circle
-                            cx="48" cy="48" r={RING_RADIUS} fill="none" stroke="#d4ff4f" strokeWidth="6" strokeLinecap="round"
+                            cx="48" cy="48" r={RING_RADIUS} fill="none" stroke="var(--color-accent)" strokeWidth="6" strokeLinecap="round"
                             strokeDasharray={RING_CIRCUMFERENCE}
                             strokeDashoffset={stretchRingOffset}
                             style={{ transition: 'stroke-dashoffset 1s linear' }}
@@ -637,9 +637,9 @@ export function TodaysWorkout() {
               <div className="flex flex-col items-center gap-2">
                 <div className="relative w-24 h-24">
                   <svg className="w-full h-full -rotate-90" viewBox="0 0 96 96" aria-label={`Warm-up timer: ${warmupSecondsLeft ?? 0} seconds remaining`}>
-                    <circle cx="48" cy="48" r={RING_RADIUS} fill="none" stroke="#363b46" strokeWidth="6" />
+                    <circle cx="48" cy="48" r={RING_RADIUS} fill="none" stroke="var(--color-ring-track)" strokeWidth="6" />
                     <circle
-                      cx="48" cy="48" r={RING_RADIUS} fill="none" stroke="#d4ff4f" strokeWidth="6" strokeLinecap="round"
+                      cx="48" cy="48" r={RING_RADIUS} fill="none" stroke="var(--color-accent)" strokeWidth="6" strokeLinecap="round"
                       strokeDasharray={RING_CIRCUMFERENCE}
                       strokeDashoffset={warmupRingOffset}
                       style={{ transition: 'stroke-dashoffset 1s linear' }}
@@ -729,7 +729,7 @@ export function TodaysWorkout() {
                 cy="48"
                 r={RING_RADIUS}
                 fill="none"
-                stroke="#363b46"
+                stroke="var(--color-ring-track)"
                 strokeWidth="6"
               />
               {/* Progress arc */}
@@ -738,7 +738,7 @@ export function TodaysWorkout() {
                 cy="48"
                 r={RING_RADIUS}
                 fill="none"
-                stroke="#d4ff4f"
+                stroke="var(--color-accent)"
                 strokeWidth="6"
                 strokeLinecap="round"
                 strokeDasharray={RING_CIRCUMFERENCE}
@@ -1036,13 +1036,13 @@ export function TodaysWorkout() {
                         viewBox="0 0 96 96"
                         aria-label={`Finisher timer: ${finisherSecondsLeft ?? 0} seconds remaining`}
                       >
-                        <circle cx="48" cy="48" r={RING_RADIUS} fill="none" stroke="#363b46" strokeWidth="6" />
+                        <circle cx="48" cy="48" r={RING_RADIUS} fill="none" stroke="var(--color-ring-track)" strokeWidth="6" />
                         <circle
                           cx="48"
                           cy="48"
                           r={RING_RADIUS}
                           fill="none"
-                          stroke={finisherPhase === 'work' ? '#d4ff4f' : '#6b7280'}
+                          stroke={finisherPhase === 'work' ? 'var(--color-accent)' : 'var(--color-text-muted)'}
                           strokeWidth="6"
                           strokeLinecap="round"
                           strokeDasharray={RING_CIRCUMFERENCE}

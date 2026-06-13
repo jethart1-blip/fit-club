@@ -4,6 +4,8 @@ import type { UserProfile, EquipmentType, Goal, SplitId, CustomSplit } from '../
 import { getProfile, saveProfile, saveProgram, setCurrentDayIndex, clearAllData, getCustomWorkouts, getCustomSplits, exportAllData, importAllData } from '../lib/storage';
 import { generateProgram } from '../lib/generateProgram';
 import { SPLITS } from '../data/splits';
+import { getTheme, setTheme } from '../lib/theme';
+import type { Theme } from '../lib/theme';
 
 const EQUIPMENT_LABELS: Record<EquipmentType, string> = {
   barbell: 'Barbell',
@@ -49,6 +51,7 @@ export function Settings() {
   const [customWorkoutCount, setCustomWorkoutCount] = useState(0);
   const [customSplits, setCustomSplits] = useState<CustomSplit[]>([]);
   const [importError, setImportError] = useState('');
+  const [theme, setThemeState] = useState<Theme>(() => getTheme());
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -169,6 +172,30 @@ export function Settings() {
       <div className="max-w-sm mx-auto pt-8 pb-12">
         <h1 className="text-2xl font-display text-textPrimary mb-1">⚙️ Settings</h1>
         <p className="text-textMuted text-sm mb-8">Manage your profile and program.</p>
+
+        {/* Appearance */}
+        <div className="bg-surface rounded-2xl p-6 mb-6">
+          <h2 className="text-sm font-semibold text-textMuted mb-1">🎨 Appearance</h2>
+          <p className="text-xs text-textMuted mb-4">Choose your preferred color theme.</p>
+          <div className="flex gap-3">
+            <button
+              onClick={() => { setTheme('dark'); setThemeState('dark'); }}
+              className={`flex-1 rounded-xl py-3 text-sm font-semibold transition-colors ${
+                theme === 'dark' ? 'bg-accent text-pageBg' : 'bg-surface2 text-textPrimary hover:bg-surface2/80'
+              }`}
+            >
+              🌙 Dark
+            </button>
+            <button
+              onClick={() => { setTheme('light'); setThemeState('light'); }}
+              className={`flex-1 rounded-xl py-3 text-sm font-semibold transition-colors ${
+                theme === 'light' ? 'bg-accent text-pageBg' : 'bg-surface2 text-textPrimary hover:bg-surface2/80'
+              }`}
+            >
+              ☀️ Light
+            </button>
+          </div>
+        </div>
 
         {/* Current Profile */}
         <div className="bg-surface rounded-2xl p-6 mb-6">

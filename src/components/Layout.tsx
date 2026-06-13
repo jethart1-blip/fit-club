@@ -25,20 +25,22 @@ export function Layout({ children }: LayoutProps) {
               <span>🏋️</span>
               <span>Fit Club</span>
             </div>
-            {navLinks.map(({ to, label, end }) => (
-              <NavLink
-                key={to}
-                to={to}
-                end={end}
-                className={({ isActive }) =>
-                  isActive
-                    ? 'border-b-2 border-accent pb-0.5 text-sm font-display font-semibold text-accent tracking-wide uppercase'
-                    : 'pb-0.5 text-sm font-display font-medium text-textMuted hover:text-textPrimary tracking-wide uppercase transition-colors'
-                }
-              >
-                {label}
-              </NavLink>
-            ))}
+            <div className="flex items-center gap-6 overflow-x-auto">
+              {navLinks.map(({ to, label, end }) => (
+                <NavLink
+                  key={to}
+                  to={to}
+                  end={end}
+                  className={({ isActive }) =>
+                    isActive
+                      ? 'border-b-2 border-accent pb-0.5 text-sm font-display font-semibold text-accent tracking-wide uppercase'
+                      : 'pb-0.5 text-sm font-display font-medium text-textMuted hover:text-textPrimary tracking-wide uppercase transition-colors'
+                  }
+                >
+                  {label}
+                </NavLink>
+              ))}
+            </div>
           </div>
         </div>
       </nav>

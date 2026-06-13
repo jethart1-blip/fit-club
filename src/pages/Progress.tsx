@@ -262,15 +262,15 @@ export function Progress() {
                     .map((e) => ({ date: formatDate(e.date), weightLbs: e.weightLbs }))}
                   margin={{ top: 4, right: 8, bottom: 4, left: 0 }}
                 >
-                  <CartesianGrid strokeDasharray="3 3" stroke="#363b46" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--color-ring-track)" />
                   <XAxis
                     dataKey="date"
-                    tick={{ fontSize: 12, fill: '#9ca3af' }}
+                    tick={{ fontSize: 12, fill: 'var(--color-text-muted)' }}
                     axisLine={false}
                     tickLine={false}
                   />
                   <YAxis
-                    tick={{ fontSize: 12, fill: '#9ca3af' }}
+                    tick={{ fontSize: 12, fill: 'var(--color-text-muted)' }}
                     axisLine={false}
                     tickLine={false}
                     width={48}
@@ -279,20 +279,20 @@ export function Progress() {
                   <Tooltip
                     contentStyle={{
                       borderRadius: '0.75rem',
-                      border: '1px solid #363b46',
-                      background: '#2a2e37',
+                      border: '1px solid var(--color-ring-track)',
+                      background: 'var(--color-surface)',
                       fontSize: '0.875rem',
-                      color: '#f1f1ef',
+                      color: 'var(--color-text-primary)',
                     }}
-                    labelStyle={{ color: '#9ca3af' }}
+                    labelStyle={{ color: 'var(--color-text-muted)' }}
                     formatter={(value) => [`${Number(value)} lb`, 'Weight']}
                   />
                   <Line
                     type="monotone"
                     dataKey="weightLbs"
-                    stroke="#d4ff4f"
+                    stroke="var(--color-accent)"
                     strokeWidth={2}
-                    dot={{ r: 4, fill: '#d4ff4f', strokeWidth: 0 }}
+                    dot={{ r: 4, fill: 'var(--color-accent)', strokeWidth: 0 }}
                     activeDot={{ r: 6 }}
                   />
                 </LineChart>
@@ -408,15 +408,15 @@ export function Progress() {
                       }))}
                       margin={{ top: 4, right: 8, bottom: 4, left: 0 }}
                     >
-                      <CartesianGrid strokeDasharray="3 3" stroke="#363b46" />
-                      <XAxis dataKey="date" tick={{ fontSize: 12, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
-                      <YAxis tick={{ fontSize: 12, fill: '#9ca3af' }} axisLine={false} tickLine={false} width={48} unit=" in" />
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--color-ring-track)" />
+                      <XAxis dataKey="date" tick={{ fontSize: 12, fill: 'var(--color-text-muted)' }} axisLine={false} tickLine={false} />
+                      <YAxis tick={{ fontSize: 12, fill: 'var(--color-text-muted)' }} axisLine={false} tickLine={false} width={48} unit=" in" />
                       <Tooltip
-                        contentStyle={{ borderRadius: '0.75rem', border: '1px solid #363b46', background: '#2a2e37', fontSize: '0.875rem', color: '#f1f1ef' }}
-                        labelStyle={{ color: '#9ca3af' }}
+                        contentStyle={{ borderRadius: '0.75rem', border: '1px solid var(--color-ring-track)', background: 'var(--color-surface)', fontSize: '0.875rem', color: 'var(--color-text-primary)' }}
+                        labelStyle={{ color: 'var(--color-text-muted)' }}
                         formatter={(value) => [`${Number(value)} in`, MEASUREMENT_FIELDS.find((f) => f.key === selectedMeasurementField)?.label ?? selectedMeasurementField]}
                       />
-                      <Line type="monotone" dataKey="value" stroke="#d4ff4f" strokeWidth={2} dot={{ r: 4, fill: '#d4ff4f', strokeWidth: 0 }} activeDot={{ r: 6 }} />
+                      <Line type="monotone" dataKey="value" stroke="var(--color-accent)" strokeWidth={2} dot={{ r: 4, fill: 'var(--color-accent)', strokeWidth: 0 }} activeDot={{ r: 6 }} />
                     </LineChart>
                   </ResponsiveContainer>
                 );
@@ -502,15 +502,15 @@ export function Progress() {
           ) : (
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={chartData} margin={{ top: 4, right: 8, bottom: 4, left: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#363b46" />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-ring-track)" />
                 <XAxis
                   dataKey="date"
-                  tick={{ fontSize: 12, fill: '#9ca3af' }}
+                  tick={{ fontSize: 12, fill: 'var(--color-text-muted)' }}
                   axisLine={false}
                   tickLine={false}
                 />
                 <YAxis
-                  tick={{ fontSize: 12, fill: '#9ca3af' }}
+                  tick={{ fontSize: 12, fill: 'var(--color-text-muted)' }}
                   axisLine={false}
                   tickLine={false}
                   width={40}
@@ -519,12 +519,12 @@ export function Progress() {
                 <Tooltip
                   contentStyle={{
                     borderRadius: '0.75rem',
-                    border: '1px solid #363b46',
-                    background: '#2a2e37',
+                    border: '1px solid var(--color-ring-track)',
+                    background: 'var(--color-surface)',
                     fontSize: '0.875rem',
-                    color: '#f1f1ef',
+                    color: 'var(--color-text-primary)',
                   }}
-                  labelStyle={{ color: '#9ca3af' }}
+                  labelStyle={{ color: 'var(--color-text-muted)' }}
                   formatter={(value, name) => [
                     `${Number(value)} lb`,
                     name === 'weight' ? 'Max Weight' : 'Est. 1RM',
@@ -532,22 +532,22 @@ export function Progress() {
                 />
                 <Legend
                   formatter={(value) => (value === 'weight' ? 'Max Weight' : 'Est. 1RM')}
-                  wrapperStyle={{ fontSize: '0.8rem', color: '#9ca3af' }}
+                  wrapperStyle={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}
                 />
                 <Line
                   type="monotone"
                   dataKey="weight"
-                  stroke="#d4ff4f"
+                  stroke="var(--color-accent)"
                   strokeWidth={2}
-                  dot={{ r: 4, fill: '#d4ff4f', strokeWidth: 0 }}
+                  dot={{ r: 4, fill: 'var(--color-accent)', strokeWidth: 0 }}
                   activeDot={{ r: 6 }}
                 />
                 <Line
                   type="monotone"
                   dataKey="estimated1RM"
-                  stroke="#2dd4bf"
+                  stroke="var(--color-accent2)"
                   strokeWidth={2}
-                  dot={{ r: 4, fill: '#2dd4bf', strokeWidth: 0 }}
+                  dot={{ r: 4, fill: 'var(--color-accent2)', strokeWidth: 0 }}
                   activeDot={{ r: 6 }}
                 />
               </LineChart>
@@ -801,15 +801,15 @@ export function Progress() {
                   .map((e) => ({ date: formatDate(e.date), weightLbs: e.weightLbs }))}
                 margin={{ top: 4, right: 8, bottom: 4, left: 0 }}
               >
-                <CartesianGrid strokeDasharray="3 3" stroke="#363b46" />
+                <CartesianGrid strokeDasharray="3 3" stroke="var(--color-ring-track)" />
                 <XAxis
                   dataKey="date"
-                  tick={{ fontSize: 12, fill: '#9ca3af' }}
+                  tick={{ fontSize: 12, fill: 'var(--color-text-muted)' }}
                   axisLine={false}
                   tickLine={false}
                 />
                 <YAxis
-                  tick={{ fontSize: 12, fill: '#9ca3af' }}
+                  tick={{ fontSize: 12, fill: 'var(--color-text-muted)' }}
                   axisLine={false}
                   tickLine={false}
                   width={48}
@@ -818,20 +818,20 @@ export function Progress() {
                 <Tooltip
                   contentStyle={{
                     borderRadius: '0.75rem',
-                    border: '1px solid #363b46',
-                    background: '#2a2e37',
+                    border: '1px solid var(--color-ring-track)',
+                    background: 'var(--color-surface)',
                     fontSize: '0.875rem',
-                    color: '#f1f1ef',
+                    color: 'var(--color-text-primary)',
                   }}
-                  labelStyle={{ color: '#9ca3af' }}
+                  labelStyle={{ color: 'var(--color-text-muted)' }}
                   formatter={(value) => [`${Number(value)} lb`, 'Weight']}
                 />
                 <Line
                   type="monotone"
                   dataKey="weightLbs"
-                  stroke="#d4ff4f"
+                  stroke="var(--color-accent)"
                   strokeWidth={2}
-                  dot={{ r: 4, fill: '#d4ff4f', strokeWidth: 0 }}
+                  dot={{ r: 4, fill: 'var(--color-accent)', strokeWidth: 0 }}
                   activeDot={{ r: 6 }}
                 />
               </LineChart>
@@ -947,15 +947,15 @@ export function Progress() {
                     }))}
                     margin={{ top: 4, right: 8, bottom: 4, left: 0 }}
                   >
-                    <CartesianGrid strokeDasharray="3 3" stroke="#363b46" />
-                    <XAxis dataKey="date" tick={{ fontSize: 12, fill: '#9ca3af' }} axisLine={false} tickLine={false} />
-                    <YAxis tick={{ fontSize: 12, fill: '#9ca3af' }} axisLine={false} tickLine={false} width={48} unit=" in" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--color-ring-track)" />
+                    <XAxis dataKey="date" tick={{ fontSize: 12, fill: 'var(--color-text-muted)' }} axisLine={false} tickLine={false} />
+                    <YAxis tick={{ fontSize: 12, fill: 'var(--color-text-muted)' }} axisLine={false} tickLine={false} width={48} unit=" in" />
                     <Tooltip
-                      contentStyle={{ borderRadius: '0.75rem', border: '1px solid #363b46', background: '#2a2e37', fontSize: '0.875rem', color: '#f1f1ef' }}
-                      labelStyle={{ color: '#9ca3af' }}
+                      contentStyle={{ borderRadius: '0.75rem', border: '1px solid var(--color-ring-track)', background: 'var(--color-surface)', fontSize: '0.875rem', color: 'var(--color-text-primary)' }}
+                      labelStyle={{ color: 'var(--color-text-muted)' }}
                       formatter={(value) => [`${Number(value)} in`, MEASUREMENT_FIELDS.find((f) => f.key === selectedMeasurementField)?.label ?? selectedMeasurementField]}
                     />
-                    <Line type="monotone" dataKey="value" stroke="#d4ff4f" strokeWidth={2} dot={{ r: 4, fill: '#d4ff4f', strokeWidth: 0 }} activeDot={{ r: 6 }} />
+                    <Line type="monotone" dataKey="value" stroke="var(--color-accent)" strokeWidth={2} dot={{ r: 4, fill: 'var(--color-accent)', strokeWidth: 0 }} activeDot={{ r: 6 }} />
                   </LineChart>
                 </ResponsiveContainer>
               );
