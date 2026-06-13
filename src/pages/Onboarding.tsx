@@ -30,22 +30,25 @@ const SPORT_OPTIONS: { value: SplitId; label: string; description: string }[] = 
 
 export function Onboarding() {
   const navigate = useNavigate();
-  const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
+  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5 | 6>(1);
 
-  // Step 1
+  // Step 1 – Name
+  const [name, setName] = useState('');
+
+  // Step 2
   const [age, setAge] = useState('');
   const [weightLbs, setWeightLbs] = useState('');
   const [heightInches, setHeightInches] = useState('');
   const [daysPerWeek, setDaysPerWeek] = useState('');
 
-  // Step 2
+  // Step 3
   const [equipment, setEquipment] = useState<EquipmentType[]>([]);
 
-  // Step 3 – Goal
+  // Step 4 – Goal
   const [goal, setGoal] = useState<Goal | ''>('');
   const [sportSplitId, setSportSplitId] = useState<SplitId | ''>('');
 
-  // Step 4 – Split
+  // Step 5 – Split
   const [splitId, setSplitId] = useState<SplitId | ''>('');
 
   function toggleEquipment(value: EquipmentType) {
@@ -68,7 +71,8 @@ export function Onboarding() {
   }
 
   function canAdvance() {
-    if (step === 1) {
+    if (step === 1) return name.trim().length > 0;
+    if (step === 2) {
       const a = Number(age);
       const w = Number(weightLbs);
       const h = Number(heightInches);
@@ -80,28 +84,30 @@ export function Onboarding() {
         daysPerWeek !== '' && !isNaN(d) && d >= 1 && d <= 7
       );
     }
-    if (step === 2) return equipment.length > 0;
-    if (step === 3) return goal !== '' && (goal !== 'sports_performance' || sportSplitId !== '');
-    return splitId !== '';
+    if (step === 3) return equipment.length > 0;
+    if (step === 4) return goal !== '' && (goal !== 'sports_performance' || sportSplitId !== '');
+    if (step === 5) return splitId !== '';
+    return true;
   }
 
   function handleNext() {
     if (!canAdvance()) return;
-    if (step === 3 && goal === 'sports_performance') {
+    if (step === 4 && goal === 'sports_performance') {
       handleSubmit();
       return;
     }
-    if (step < 4) setStep((s) => (s + 1) as 1 | 2 | 3 | 4);
+    if (step < 5) setStep((s) => (s + 1) as 1 | 2 | 3 | 4 | 5 | 6);
     else handleSubmit();
   }
 
   function handleBack() {
-    if (step > 1) setStep((s) => (s - 1) as 1 | 2 | 3 | 4);
+    if (step > 1) setStep((s) => (s - 1) as 1 | 2 | 3 | 4 | 5 | 6);
   }
 
   function handleSubmit() {
     const now = new Date().toISOString();
     const profile: UserProfile = {
+      name: name.trim(),
       age: Number(age),
       weightLbs: Number(weightLbs),
       heightInches: Number(heightInches),
@@ -131,10 +137,10 @@ export function Onboarding() {
         {/* Header */}
         <div className="mb-6">
           <p className="text-xs font-semibold text-accent uppercase tracking-wide mb-1">
-            Step {step} of 4
+            Step {step} of 5
           </p>
           <div className="flex gap-1 mb-4">
-            {([1, 2, 3, 4] as const).map((s) => (
+            {([1, 2, 3, 4, 5] as const).map((s) => (
               <div
                 key={s}
                 className={`h-1 flex-1 rounded-full transition-colors ${
@@ -144,21 +150,38 @@ export function Onboarding() {
             ))}
           </div>
           <h1 className="text-xl font-display text-textPrimary">
-            {step === 1 && 'Basic Info'}
-            {step === 2 && 'Equipment'}
-            {step === 3 && 'Your Goal'}
-            {step === 4 && 'Choose a Split'}
+            {step === 1 && "What's Your Name?"}
+            {step === 2 && 'Basic Info'}
+            {step === 3 && 'Equipment'}
+            {step === 4 && 'Your Goal'}
+            {step === 5 && 'Choose a Split'}
           </h1>
           <p className="text-textMuted text-sm mt-1">
-            {step === 1 && 'Tell us a little about yourself.'}
-            {step === 2 && 'Select all equipment you have access to.'}
-            {step === 3 && 'What are you training for?'}
-            {step === 4 && 'Pick a training structure.'}
+            {step === 1 && "We'll use this to personalize your experience."}
+            {step === 2 && 'Tell us a little about yourself.'}
+            {step === 3 && 'Select all equipment you have access to.'}
+            {step === 4 && 'What are you training for?'}
+            {step === 5 && 'Pick a training structure.'}
           </p>
         </div>
 
-        {/* Step 1 – Basic Info */}
+        {/* Step 1 – Name */}
         {step === 1 && (
+          <div>
+            <label className="block text-sm font-semibold text-textMuted mb-1">Your Name</label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="e.g. Alex"
+              autoFocus
+              className="w-full rounded-xl border-2 border-surface2 px-4 py-2.5 text-sm bg-surface2 text-textPrimary placeholder-textMuted focus:outline-none focus:border-accent transition-colors"
+            />
+          </div>
+        )}
+
+        {/* Step 2 – Basic Info */}
+        {step === 2 && (
           <div className="space-y-4">
             {(() => {
               const fieldErrors = getStep1FieldErrors();
@@ -191,8 +214,8 @@ export function Onboarding() {
           </div>
         )}
 
-        {/* Step 2 – Equipment */}
-        {step === 2 && (
+        {/* Step 3 – Equipment */}
+        {step === 3 && (
           <div className="space-y-2">
             {EQUIPMENT_OPTIONS.map(({ value, label }) => (
               <label key={value} className={cardClass(equipment.includes(value))}>
@@ -224,8 +247,8 @@ export function Onboarding() {
           </div>
         )}
 
-        {/* Step 3 – Goal */}
-        {step === 3 && (
+        {/* Step 4 – Goal */}
+        {step === 4 && (
           <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
             {GOAL_OPTIONS.map(({ value, label, description }) => (
               <label key={value} className={cardClass(goal === value)}>
@@ -277,8 +300,8 @@ export function Onboarding() {
           </div>
         )}
 
-        {/* Step 4 – Split Picker (skipped for sports_performance users) */}
-        {step === 4 && (
+        {/* Step 5 – Split Picker (skipped for sports_performance users) */}
+        {step === 5 && (
           <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
             {Object.values(SPLITS).map((split) => (
               <label key={split.id} className={cardClass(splitId === split.id)}>
@@ -321,7 +344,7 @@ export function Onboarding() {
             disabled={!canAdvance()}
             className="flex-1 bg-accent hover:bg-accent/90 active:bg-accent/80 disabled:opacity-40 disabled:cursor-not-allowed text-pageBg font-semibold rounded-xl py-3 text-sm transition-colors"
           >
-            {(step === 4 || (step === 3 && goal === 'sports_performance')) ? 'Get Started' : 'Next'}
+            {(step === 5 || (step === 4 && goal === 'sports_performance')) ? 'Get Started' : 'Next'}
           </button>
         </div>
       </div>

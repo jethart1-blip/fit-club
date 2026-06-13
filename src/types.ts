@@ -40,7 +40,7 @@ export type SplitId =
   | "soccer";
 
 export interface UserProfile {
-  name?: string;
+  name: string;
   daysPerWeek: number;
   equipment: EquipmentType[];
   age: number;
