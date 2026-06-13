@@ -12,6 +12,8 @@ import {
 import { getSuggestedWeight } from '../lib/getSuggestedWeight';
 import { EXERCISE_LIBRARY } from '../data/exercises';
 import { MUSCLE_ILLUSTRATIONS } from '../assets/muscles';
+import { FINISHERS } from '../data/finishers';
+import type { Finisher } from '../data/finishers';
 
 type SetInputs = { weight: string; reps: string; rpe: string };
 
@@ -46,6 +48,13 @@ export function TodaysWorkout() {
   const [restTotalSeconds, setRestTotalSeconds] = useState<number>(0);
   const [saved, setSaved] = useState(false);
 
+  const [finisher, setFinisher] = useState<Finisher | null>(null);
+  const [finisherStarted, setFinisherStarted] = useState(false);
+  const [finisherRound, setFinisherRound] = useState(1);
+  const [finisherPhase, setFinisherPhase] = useState<'work' | 'rest'>('work');
+  const [finisherSecondsLeft, setFinisherSecondsLeft] = useState<number | null>(null);
+  const [finisherDeclined, setFinisherDeclined] = useState(false);
+
   useEffect(() => {
     const p = getProgram();
     if (!p) {
@@ -76,6 +85,7 @@ export function TodaysWorkout() {
     setExercises(day.exercises);
     setInputs(initialInputs);
     setSuggestedWeights(initialSuggestedWeights);
+    setFinisher(FINISHERS[Math.floor(Math.random() * FINISHERS.length)]);
   }, [navigate]);
 
   // Rest timer countdown
@@ -89,6 +99,35 @@ export function TodaysWorkout() {
     }, 1000);
     return () => clearInterval(id);
   }, [restSecondsLeft]);
+
+  // Finisher timer countdown
+  useEffect(() => {
+    if (finisherSecondsLeft === null || finisherSecondsLeft <= 0) return;
+    const id = setInterval(() => {
+      setFinisherSecondsLeft((prev) => {
+        if (prev === null || prev <= 1) return null;
+        return prev - 1;
+      });
+    }, 1000);
+    return () => clearInterval(id);
+  }, [finisherSecondsLeft]);
+
+  // Finisher circuit advancement
+  useEffect(() => {
+    if (!finisherStarted || finisherSecondsLeft !== null) return;
+    if (finisherPhase === 'work') {
+      if (finisherRound >= 3) {
+        setFinisherStarted(false);
+        return;
+      }
+      setFinisherPhase('rest');
+      setFinisherSecondsLeft(15);
+    } else {
+      setFinisherPhase('work');
+      setFinisherRound((r) => r + 1);
+      setFinisherSecondsLeft(30);
+    }
+  }, [finisherSecondsLeft, finisherStarted, finisherPhase, finisherRound]);
 
   function updateInput(exerciseId: string, setIdx: number, field: 'weight' | 'reps' | 'rpe', value: string) {
     setInputs((prev) => {
@@ -336,7 +375,7 @@ export function TodaysWorkout() {
 
       {/* Slide content */}
       <div className="flex-1 overflow-y-auto p-4">
-        <div className="max-w-lg mx-auto">
+        <div className="max-w-lg mx-auto space-y-4">
           <div className="bg-surface rounded-2xl p-5 space-y-5">
             <div
               className="w-24 h-24 mx-auto [&>svg]:w-full [&>svg]:h-full"
@@ -425,6 +464,106 @@ export function TodaysWorkout() {
               ))}
             </div>
           </div>
+
+          {/* Finisher card – last slide only, not after save */}
+          {currentSlideIndex === exercises.length - 1 && !saved && (() => {
+            const finisherComplete = !finisherStarted && finisherSecondsLeft === null && finisherRound >= 3 && finisherPhase === 'work';
+            if (finisherComplete) {
+              return (
+                <div className="bg-surface rounded-2xl p-5 text-center">
+                  <p className="text-lg font-display text-accent">Finisher complete! 💪</p>
+                </div>
+              );
+            }
+            if (finisherDeclined || (!finisherStarted && finisherRound > 1)) return null;
+            if (finisherStarted && finisher) {
+              const totalSecs = finisherPhase === 'work' ? 30 : 15;
+              const finisherRingProgress = finisherSecondsLeft !== null ? finisherSecondsLeft / totalSecs : 0;
+              const finisherRingOffset = RING_CIRCUMFERENCE * (1 - finisherRingProgress);
+              return (
+                <div className="bg-surface rounded-2xl p-5 space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h3 className="text-base font-display text-textPrimary">{finisher.name}</h3>
+                      <p className="text-xs text-textMuted mt-0.5">Round {finisherRound} of 3</p>
+                    </div>
+                    <span className={`text-sm font-semibold px-3 py-1 rounded-lg ${finisherPhase === 'work' ? 'bg-accent/20 text-accent' : 'bg-surface2 text-textMuted'}`}>
+                      {finisherPhase === 'work' ? 'Work!' : 'Rest'}
+                    </span>
+                  </div>
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="relative w-24 h-24">
+                      <svg
+                        className="w-full h-full -rotate-90"
+                        viewBox="0 0 96 96"
+                        aria-label={`Finisher timer: ${finisherSecondsLeft ?? 0} seconds remaining`}
+                      >
+                        <circle cx="48" cy="48" r={RING_RADIUS} fill="none" stroke="#363b46" strokeWidth="6" />
+                        <circle
+                          cx="48"
+                          cy="48"
+                          r={RING_RADIUS}
+                          fill="none"
+                          stroke={finisherPhase === 'work' ? '#d4ff4f' : '#6b7280'}
+                          strokeWidth="6"
+                          strokeLinecap="round"
+                          strokeDasharray={RING_CIRCUMFERENCE}
+                          strokeDashoffset={finisherRingOffset}
+                          style={{ transition: 'stroke-dashoffset 1s linear' }}
+                        />
+                      </svg>
+                      <div className="absolute inset-0 flex flex-col items-center justify-center">
+                        <span className="text-2xl font-display text-textPrimary leading-none">
+                          {finisherSecondsLeft ?? 0}
+                        </span>
+                        <span className="text-xs text-textMuted mt-0.5">
+                          {finisherPhase === 'work' ? 'work' : 'rest'}
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => { setFinisherStarted(false); setFinisherDeclined(true); }}
+                      className="text-textMuted text-xs font-medium underline underline-offset-2 hover:text-textPrimary transition-colors"
+                    >
+                      Stop
+                    </button>
+                  </div>
+                </div>
+              );
+            }
+            if (finisher && !finisherStarted && !finisherDeclined) {
+              return (
+                <div className="bg-surface rounded-2xl p-5 space-y-3">
+                  <div>
+                    <h3 className="text-base font-display text-textPrimary">Add a Finisher?</h3>
+                    <p className="text-sm font-semibold text-accent mt-1">{finisher.name}</p>
+                    <p className="text-xs text-textMuted mt-0.5">{finisher.description}</p>
+                    <p className="text-xs text-textMuted mt-1">3 rounds: 30s work / 15s rest</p>
+                  </div>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => {
+                        setFinisherStarted(true);
+                        setFinisherRound(1);
+                        setFinisherPhase('work');
+                        setFinisherSecondsLeft(30);
+                      }}
+                      className="flex-1 bg-accent hover:bg-accent/90 active:bg-accent/80 text-pageBg font-semibold rounded-xl py-2.5 text-sm transition-colors"
+                    >
+                      Start Finisher
+                    </button>
+                    <button
+                      onClick={() => setFinisherDeclined(true)}
+                      className="flex-1 bg-surface2 hover:bg-surface2/80 text-textPrimary font-medium rounded-xl py-2.5 text-sm transition-colors"
+                    >
+                      Skip
+                    </button>
+                  </div>
+                </div>
+              );
+            }
+            return null;
+          })()}
         </div>
       </div>
 
