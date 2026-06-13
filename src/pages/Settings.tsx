@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { UserProfile, EquipmentType, Goal, SplitId, CustomSplit } from '../types';
-import { getProfile, saveProfile, saveProgram, setCurrentDayIndex, clearAllData, getCustomWorkouts, getCustomSplits } from '../lib/storage';
+import { getProfile, saveProfile, saveProgram, setCurrentDayIndex, clearAllData, getCustomWorkouts, getCustomSplits, exportAllData, importAllData } from '../lib/storage';
 import { generateProgram } from '../lib/generateProgram';
 import { SPLITS } from '../data/splits';
 
@@ -48,6 +48,8 @@ export function Settings() {
   const [warningMessage, setWarningMessage] = useState('');
   const [customWorkoutCount, setCustomWorkoutCount] = useState(0);
   const [customSplits, setCustomSplits] = useState<CustomSplit[]>([]);
+  const [importError, setImportError] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const p = getProfile();
@@ -109,6 +111,43 @@ export function Settings() {
     } catch (err) {
       setWarningMessage(err instanceof Error ? err.message : 'Failed to generate program.');
     }
+  }
+
+  function handleExport() {
+    const json = exportAllData();
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `fitclub-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function handleImportClick() {
+    fileInputRef.current?.click();
+  }
+
+  function handleImportFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const confirmed = window.confirm('This will replace ALL current data with the contents of this backup file. Continue?');
+    if (!confirmed) {
+      e.target.value = '';
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      try {
+        importAllData(reader.result as string);
+        window.alert('Data imported successfully! The app will now reload.');
+        window.location.reload();
+      } catch (err) {
+        setImportError(err instanceof Error ? err.message : 'Failed to import data.');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
   }
 
   function handleResetAll() {
@@ -226,6 +265,36 @@ export function Settings() {
           >
             Save Split
           </button>
+        </div>
+
+        {/* Data Backup */}
+        <div className="bg-surface rounded-2xl p-6 mb-6">
+          <h2 className="text-sm font-semibold text-textMuted mb-1">💾 Data Backup</h2>
+          <p className="text-xs text-textMuted mb-4">Export your data as a backup file, or restore from a previous backup.</p>
+          <div className="space-y-2">
+            <button
+              onClick={handleExport}
+              className="w-full bg-surface2 hover:bg-surface2/80 text-textPrimary font-semibold rounded-xl py-3 text-sm transition-colors"
+            >
+              Export Data
+            </button>
+            <button
+              onClick={handleImportClick}
+              className="w-full bg-surface2 hover:bg-surface2/80 text-textPrimary font-semibold rounded-xl py-3 text-sm transition-colors"
+            >
+              Import Data
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="application/json"
+              onChange={handleImportFile}
+              className="hidden"
+            />
+            {importError && (
+              <p className="text-xs text-danger text-center">{importError}</p>
+            )}
+          </div>
         </div>
 
         {/* Actions */}

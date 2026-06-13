@@ -270,3 +270,31 @@ export function swapExercise(dayId: string, slot: MuscleGroupSlot, newExerciseId
 
   saveProgram(program);
 }
+
+export function exportAllData(): string {
+  const data: Record<string, unknown> = {};
+  for (const key of Object.values(KEYS)) {
+    const raw = localStorage.getItem(key);
+    if (raw !== null) {
+      try {
+        data[key] = JSON.parse(raw);
+      } catch {
+        data[key] = raw;
+      }
+    }
+  }
+  return JSON.stringify({ exportedAt: new Date().toISOString(), data }, null, 2);
+}
+
+export function importAllData(json: string): void {
+  const parsed = JSON.parse(json) as { data?: Record<string, unknown> };
+  if (!parsed.data || typeof parsed.data !== 'object') {
+    throw new Error('Invalid backup file format.');
+  }
+  const validKeys = new Set<string>(Object.values(KEYS));
+  for (const [key, value] of Object.entries(parsed.data)) {
+    if (validKeys.has(key)) {
+      localStorage.setItem(key, JSON.stringify(value));
+    }
+  }
+}
