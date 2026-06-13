@@ -18,6 +18,14 @@ const GOAL_OPTIONS: { value: Goal; label: string; description: string }[] = [
   { value: 'hypertrophy', label: 'Hypertrophy', description: 'Maximize muscle size and volume.' },
   { value: 'general_fitness', label: 'General Fitness', description: 'Stay active and improve overall health.' },
   { value: 'fat_loss', label: 'Fat Loss', description: 'Burn fat while preserving muscle.' },
+  { value: 'sports_performance', label: 'Sports Performance', description: 'Train for a specific sport.' },
+];
+
+const SPORT_OPTIONS: { value: SplitId; label: string; description: string }[] = [
+  { value: 'basketball', label: 'Basketball', description: 'Explosiveness, core stability, lower-body power.' },
+  { value: 'football', label: 'Football', description: 'Full-body strength and power.' },
+  { value: 'baseball', label: 'Baseball', description: 'Rotational power and shoulder health.' },
+  { value: 'soccer', label: 'Soccer', description: 'Endurance legs and core stability.' },
 ];
 
 export function Onboarding() {
@@ -33,10 +41,11 @@ export function Onboarding() {
   // Step 2
   const [equipment, setEquipment] = useState<EquipmentType[]>([]);
 
-  // Step 3
+  // Step 3 – Goal
   const [goal, setGoal] = useState<Goal | ''>('');
+  const [sportSplitId, setSportSplitId] = useState<SplitId | ''>('');
 
-  // Step 4
+  // Step 4 – Split
   const [splitId, setSplitId] = useState<SplitId | ''>('');
 
   function toggleEquipment(value: EquipmentType) {
@@ -72,12 +81,16 @@ export function Onboarding() {
       );
     }
     if (step === 2) return equipment.length > 0;
-    if (step === 3) return goal !== '';
+    if (step === 3) return goal !== '' && (goal !== 'sports_performance' || sportSplitId !== '');
     return splitId !== '';
   }
 
   function handleNext() {
     if (!canAdvance()) return;
+    if (step === 3 && goal === 'sports_performance') {
+      handleSubmit();
+      return;
+    }
     if (step < 4) setStep((s) => (s + 1) as 1 | 2 | 3 | 4);
     else handleSubmit();
   }
@@ -95,7 +108,7 @@ export function Onboarding() {
       daysPerWeek: Number(daysPerWeek),
       equipment,
       goal: goal as Goal,
-      splitId: splitId as SplitId,
+      splitId: goal === 'sports_performance' ? (sportSplitId as SplitId) : (splitId as SplitId),
       createdAt: now,
       programStartDate: now,
     };
@@ -213,7 +226,7 @@ export function Onboarding() {
 
         {/* Step 3 – Goal */}
         {step === 3 && (
-          <div className="space-y-2">
+          <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
             {GOAL_OPTIONS.map(({ value, label, description }) => (
               <label key={value} className={cardClass(goal === value)}>
                 <input
@@ -221,7 +234,10 @@ export function Onboarding() {
                   name="goal"
                   value={value}
                   checked={goal === value}
-                  onChange={() => setGoal(value)}
+                  onChange={() => {
+                    setGoal(value);
+                    if (value !== 'sports_performance') setSportSplitId('');
+                  }}
                   className="sr-only"
                 />
                 <div>
@@ -232,10 +248,36 @@ export function Onboarding() {
                 </div>
               </label>
             ))}
+
+            {goal === 'sports_performance' && (
+              <div className="mt-4">
+                <p className="text-xs font-semibold text-textMuted uppercase tracking-wide mb-2">Which sport?</p>
+                <div className="space-y-2">
+                  {SPORT_OPTIONS.map(({ value, label, description }) => (
+                    <label key={value} className={cardClass(sportSplitId === value)}>
+                      <input
+                        type="radio"
+                        name="sportSplitId"
+                        value={value}
+                        checked={sportSplitId === value}
+                        onChange={() => setSportSplitId(value)}
+                        className="sr-only"
+                      />
+                      <div>
+                        <div>{label}</div>
+                        <div className={`text-xs font-normal mt-0.5 ${sportSplitId === value ? 'text-accent' : 'text-textMuted'}`}>
+                          {description}
+                        </div>
+                      </div>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         )}
 
-        {/* Step 4 – Split Picker */}
+        {/* Step 4 – Split Picker (skipped for sports_performance users) */}
         {step === 4 && (
           <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
             {Object.values(SPLITS).map((split) => (
@@ -279,7 +321,7 @@ export function Onboarding() {
             disabled={!canAdvance()}
             className="flex-1 bg-accent hover:bg-accent/90 active:bg-accent/80 disabled:opacity-40 disabled:cursor-not-allowed text-pageBg font-semibold rounded-xl py-3 text-sm transition-colors"
           >
-            {step === 4 ? 'Get Started' : 'Next'}
+            {(step === 4 || (step === 3 && goal === 'sports_performance')) ? 'Get Started' : 'Next'}
           </button>
         </div>
       </div>

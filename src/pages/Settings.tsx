@@ -18,7 +18,10 @@ const GOAL_LABELS: Record<Goal, string> = {
   hypertrophy: 'Hypertrophy',
   general_fitness: 'General Fitness',
   fat_loss: 'Fat Loss',
+  sports_performance: 'Sports Performance',
 };
+
+const SPORT_SPLIT_IDS: SplitId[] = ['basketball', 'football', 'baseball', 'soccer'];
 
 function isValidProfile(p: UserProfile): boolean {
   return (
@@ -158,7 +161,8 @@ export function Settings() {
           <p className="text-xs text-textMuted mb-4">Select a new training structure.</p>
           <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
             {Object.values(SPLITS)
-              .filter((split) => split.id !== 'custom')
+              .filter((split) => split.id !== 'custom' || customSplits.length > 0)
+              .filter((split) => !SPORT_SPLIT_IDS.includes(split.id) || split.id === profile.splitId)
               .map((split) => (
                 <label key={split.id} className={splitCardClass(selectedSplitId === split.id)}>
                   <input

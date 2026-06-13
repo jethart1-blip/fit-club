@@ -328,4 +328,49 @@ export const SPLITS: Record<SplitId, SplitDefinition> = {
     description: "Built from the workouts you created in the Workout Builder.",
     dayTemplates: [],
   },
+
+  basketball: {
+    id: "basketball",
+    name: "Basketball Performance",
+    description: "Lower-body power, core stability, and balanced upper-body strength for explosiveness on the court.",
+    dayTemplates: [
+      { id: "bb_lower_power", name: "Lower Power", slots: ["quads", "hamstrings", "glutes", "calves", "abs"] as MuscleGroupSlot[], repRange: { sets: 4, min: 4, max: 6 }, restSeconds: 150 },
+      { id: "bb_upper", name: "Upper Push/Pull", slots: ["chest", "back", "shoulders", "abs"] as MuscleGroupSlot[], repRange: { sets: 3, min: 8, max: 10 }, restSeconds: 90 },
+      { id: "bb_lower_hyp", name: "Lower Hypertrophy + Core", slots: ["quads", "hamstrings", "glutes", "abs", "calves"] as MuscleGroupSlot[], repRange: { sets: 3, min: 10, max: 12 }, restSeconds: 90 },
+    ],
+  },
+
+  football: {
+    id: "football",
+    name: "Football Performance",
+    description: "Full-body strength and power, built around heavy lower-body and pressing/pulling work.",
+    dayTemplates: [
+      { id: "fb_lower", name: "Lower Strength", slots: ["quads", "hamstrings", "glutes", "calves"] as MuscleGroupSlot[], repRange: { sets: 4, min: 4, max: 6 }, restSeconds: 150 },
+      { id: "fb_push", name: "Upper Push", slots: ["chest", "shoulders", "triceps"] as MuscleGroupSlot[], repRange: { sets: 4, min: 5, max: 8 }, restSeconds: 120 },
+      { id: "fb_pull", name: "Upper Pull", slots: ["back", "biceps", "forearms"] as MuscleGroupSlot[], repRange: { sets: 4, min: 5, max: 8 }, restSeconds: 120 },
+      { id: "fb_power", name: "Power & Core", slots: ["quads", "glutes", "abs", "hamstrings"] as MuscleGroupSlot[], repRange: { sets: 5, min: 3, max: 5 }, restSeconds: 180 },
+    ],
+  },
+
+  baseball: {
+    id: "baseball",
+    name: "Baseball Performance",
+    description: "Rotational power, shoulder health, and lower-body strength for throwing and explosive movement.",
+    dayTemplates: [
+      { id: "bs_lower", name: "Lower Power", slots: ["quads", "hamstrings", "glutes", "calves"] as MuscleGroupSlot[], repRange: { sets: 4, min: 4, max: 6 }, restSeconds: 150 },
+      { id: "bs_upper", name: "Upper Balanced", slots: ["chest", "back", "shoulders", "biceps", "triceps"] as MuscleGroupSlot[], repRange: { sets: 3, min: 8, max: 10 }, restSeconds: 90 },
+      { id: "bs_core_legs", name: "Core & Legs", slots: ["abs", "forearms", "quads", "hamstrings", "glutes"] as MuscleGroupSlot[], repRange: { sets: 3, min: 10, max: 12 }, restSeconds: 90 },
+    ],
+  },
+
+  soccer: {
+    id: "soccer",
+    name: "Soccer Performance",
+    description: "Endurance-focused leg work with core stability and balanced upper-body strength.",
+    dayTemplates: [
+      { id: "sc_lower", name: "Lower Endurance", slots: ["quads", "hamstrings", "glutes", "calves"] as MuscleGroupSlot[], repRange: { sets: 3, min: 12, max: 15 }, restSeconds: 60 },
+      { id: "sc_upper_core", name: "Upper + Core", slots: ["chest", "back", "shoulders", "abs"] as MuscleGroupSlot[], repRange: { sets: 3, min: 10, max: 12 }, restSeconds: 75 },
+      { id: "sc_lower_core", name: "Lower + Core", slots: ["hamstrings", "glutes", "calves", "abs"] as MuscleGroupSlot[], repRange: { sets: 3, min: 12, max: 15 }, restSeconds: 60 },
+    ],
+  },
 };

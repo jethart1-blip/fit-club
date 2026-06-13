@@ -20,7 +20,7 @@ export interface Exercise {
   equipment: EquipmentType;
 }
 
-export type Goal = "strength" | "hypertrophy" | "general_fitness" | "fat_loss";
+export type Goal = "strength" | "hypertrophy" | "general_fitness" | "fat_loss" | "sports_performance";
 
 export type SplitId =
   | "ppl"
@@ -33,7 +33,11 @@ export type SplitId =
   | "torso_limbs"
   | "powerbuilding"
   | "strength_athlete"
-  | "custom";
+  | "custom"
+  | "basketball"
+  | "football"
+  | "baseball"
+  | "soccer";
 
 export interface UserProfile {
   name?: string;
