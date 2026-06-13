@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { CoachModal } from '../components/CoachModal';
 import type { Program, WorkoutLog, ExerciseLog, SetEntry, ProgramExercise } from '../types';
 import {
   getProgram,
@@ -509,6 +510,7 @@ export function TodaysWorkout() {
             </div>
           )}
         </div>
+        <CoachModal />
       </div>
     );
   }
@@ -560,6 +562,7 @@ export function TodaysWorkout() {
             Continue
           </button>
         </div>
+        <CoachModal />
       </div>
     );
   }
@@ -586,6 +589,7 @@ export function TodaysWorkout() {
             Start Workout
           </button>
         </div>
+        <CoachModal />
       </div>
     );
   }
@@ -659,6 +663,7 @@ export function TodaysWorkout() {
             </>
           )}
         </div>
+        <CoachModal />
       </div>
     );
   }
@@ -1138,6 +1143,7 @@ export function TodaysWorkout() {
           </div>
         </div>
       </div>
+      <CoachModal />
     </div>
   );
 }
