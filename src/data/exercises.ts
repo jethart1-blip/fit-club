@@ -111,4 +111,66 @@ export const EXERCISE_LIBRARY: Exercise[] = [
 
   // HAMSTRINGS (cable gap)
   { id: "cable_pull_through", name: "Cable Pull-Through", slot: "hamstrings", equipment: "cables" },
+
+  // CHEST (additional)
+  { id: "decline_barbell_bench_press", name: "Decline Barbell Bench Press", slot: "chest", equipment: "barbell" },
+  { id: "decline_dumbbell_press", name: "Decline Dumbbell Press", slot: "chest", equipment: "dumbbells" },
+  { id: "cable_crossover", name: "Cable Crossover", slot: "chest", equipment: "cables" },
+  { id: "wide_push_up", name: "Wide Push-Up", slot: "chest", equipment: "bodyweight" },
+
+  // BACK (additional)
+  { id: "yates_row", name: "Yates Row", slot: "back", equipment: "barbell" },
+  { id: "renegade_row", name: "Renegade Row", slot: "back", equipment: "dumbbells" },
+  { id: "high_row_machine", name: "High Row Machine", slot: "back", equipment: "machines" },
+  { id: "straight_arm_pulldown", name: "Straight Arm Pulldown", slot: "back", equipment: "cables" },
+  { id: "inverted_row", name: "Inverted Row", slot: "back", equipment: "bodyweight" },
+
+  // SHOULDERS (additional)
+  { id: "behind_neck_press", name: "Behind Neck Press", slot: "shoulders", equipment: "barbell" },
+  { id: "front_raise", name: "Front Raise", slot: "shoulders", equipment: "dumbbells" },
+  { id: "rear_delt_fly", name: "Rear Delt Fly", slot: "shoulders", equipment: "dumbbells" },
+  { id: "cable_front_raise", name: "Cable Front Raise", slot: "shoulders", equipment: "cables" },
+
+  // BICEPS (additional)
+  { id: "drag_curl", name: "Drag Curl", slot: "biceps", equipment: "barbell" },
+  { id: "incline_curl", name: "Incline Curl", slot: "biceps", equipment: "dumbbells" },
+  { id: "concentration_curl", name: "Concentration Curl", slot: "biceps", equipment: "dumbbells" },
+  { id: "rope_curl", name: "Rope Curl", slot: "biceps", equipment: "cables" },
+
+  // TRICEPS (additional)
+  { id: "jm_press", name: "JM Press", slot: "triceps", equipment: "barbell" },
+  { id: "tate_press", name: "Tate Press", slot: "triceps", equipment: "dumbbells" },
+  { id: "reverse_pushdown", name: "Reverse Pushdown", slot: "triceps", equipment: "cables" },
+  { id: "diamond_push_up", name: "Diamond Push-Up", slot: "triceps", equipment: "bodyweight" },
+
+  // QUADS (additional)
+  { id: "hack_squat_barbell", name: "Hack Squat (Barbell)", slot: "quads", equipment: "barbell" },
+  { id: "step_up_dumbbell", name: "Step-Up", slot: "quads", equipment: "dumbbells" },
+  { id: "pendulum_squat", name: "Pendulum Squat", slot: "quads", equipment: "machines" },
+  { id: "pistol_squat", name: "Pistol Squat", slot: "quads", equipment: "bodyweight" },
+
+  // HAMSTRINGS (additional)
+  { id: "good_morning", name: "Good Morning", slot: "hamstrings", equipment: "barbell" },
+  { id: "single_leg_rdl", name: "Single Leg RDL", slot: "hamstrings", equipment: "dumbbells" },
+  { id: "glute_ham_raise", name: "Glute Ham Raise", slot: "hamstrings", equipment: "machines" },
+
+  // GLUTES (additional)
+  { id: "glute_bridge_barbell", name: "Barbell Glute Bridge", slot: "glutes", equipment: "barbell" },
+  { id: "abductor_machine", name: "Abductor Machine", slot: "glutes", equipment: "machines" },
+  { id: "cable_pull_through_glutes", name: "Cable Pull-Through", slot: "glutes", equipment: "cables" },
+  { id: "glute_bridge_bodyweight", name: "Glute Bridge", slot: "glutes", equipment: "bodyweight" },
+
+  // ABS (additional)
+  { id: "v_up", name: "V-Up", slot: "abs", equipment: "bodyweight" },
+  { id: "hollow_hold", name: "Hollow Hold", slot: "abs", equipment: "bodyweight" },
+  { id: "pallof_press", name: "Pallof Press", slot: "abs", equipment: "cables" },
+  { id: "rotary_torso_machine", name: "Rotary Torso Machine", slot: "abs", equipment: "machines" },
+
+  // FOREARMS (additional)
+  { id: "towel_pull_up", name: "Towel Pull-Up", slot: "forearms", equipment: "bodyweight" },
+  { id: "plate_pinch", name: "Plate Pinch", slot: "forearms", equipment: "dumbbells" },
+
+  // CALVES (additional)
+  { id: "donkey_calf_raise", name: "Donkey Calf Raise", slot: "calves", equipment: "machines" },
+  { id: "jump_rope", name: "Jump Rope", slot: "calves", equipment: "bodyweight" },
 ];
