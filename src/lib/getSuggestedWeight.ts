@@ -1,5 +1,7 @@
 import type { WorkoutLog } from '../types';
 
+const WEIGHT_INCREMENT = 5;
+
 export function getSuggestedWeight(
   exerciseId: string,
   programTarget: { targetRepsMin: number; targetRepsMax: number },
@@ -9,16 +11,22 @@ export function getSuggestedWeight(
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
   );
 
-  const recentLog = sorted
-    .flatMap((log) => log.exercises)
-    .find((ex) => ex.exerciseId === exerciseId);
+  let recentLog: WorkoutLog['exercises'][number] | undefined;
+  for (const log of sorted) {
+    const match = log.exercises.find((ex) => ex.exerciseId === exerciseId);
+    if (match) {
+      recentLog = match;
+      break;
+    }
+  }
 
-  if (!recentLog) return null;
+  if (!recentLog || recentLog.sets.length === 0) return null;
 
-  const heaviestWeight = Math.max(...recentLog.sets.map((s) => s.weight));
+  const lastSetWeight = recentLog.sets[recentLog.sets.length - 1].weight;
 
-  const setsAtHeaviest = recentLog.sets.filter((s) => s.weight === heaviestWeight);
-  const allMetMax = setsAtHeaviest.every((s) => s.reps >= programTarget.targetRepsMax);
+  const allHitMax = recentLog.sets.every(
+    (s) => s.reps >= programTarget.targetRepsMax
+  );
 
-  return allMetMax ? heaviestWeight + 5 : heaviestWeight;
+  return allHitMax ? lastSetWeight + WEIGHT_INCREMENT : lastSetWeight;
 }
