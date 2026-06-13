@@ -3,6 +3,7 @@ import type { WorkoutLog, Program } from '../types';
 import { getWorkoutLogs, getProgram } from '../lib/storage';
 import { EXERCISE_LIBRARY } from '../data/exercises';
 import { getMaxEstimated1RM } from '../lib/getEstimated1RM';
+import { getAllTimePR } from '../lib/getPRs';
 import {
   LineChart,
   Line,
@@ -71,6 +72,23 @@ export function Progress() {
   const previous1RM = chartData.length > 1 ? chartData[chartData.length - 2].estimated1RM : null;
   const isNewRecord = current1RM !== null && previous1RM !== null && current1RM > previous1RM;
 
+  const allTimePR = useMemo(() => getAllTimePR(selectedId, logs), [selectedId]);
+
+  const sessionLog = logsSortedAsc[sessionIndex] ?? null;
+  const sessionDayName = sessionLog
+    ? (program?.days.find((d) => d.id === sessionLog.programDayId)?.name ?? sessionLog.programDayId)
+    : null;
+
+  const sessionMaxWeight = useMemo(() => {
+    if (!sessionLog || !selectedId) return null;
+    const exLog = sessionLog.exercises.find((e) => e.exerciseId === selectedId);
+    if (!exLog || exLog.sets.length === 0) return null;
+    return Math.max(...exLog.sets.map((s) => s.weight));
+  }, [sessionLog, selectedId]);
+
+  const sessionIsPR =
+    allTimePR !== null && sessionMaxWeight !== null && sessionMaxWeight === allTimePR.weight;
+
   if (loggedExercises.length === 0) {
     return (
       <div className="min-h-screen bg-pageBg p-4">
@@ -85,11 +103,6 @@ export function Progress() {
       </div>
     );
   }
-
-  const sessionLog = logsSortedAsc[sessionIndex] ?? null;
-  const sessionDayName = sessionLog
-    ? (program?.days.find((d) => d.id === sessionLog.programDayId)?.name ?? sessionLog.programDayId)
-    : null;
 
   return (
     <div className="min-h-screen bg-pageBg p-4">
@@ -193,6 +206,21 @@ export function Progress() {
               )}
             </div>
           )}
+
+          {/* All-time PR */}
+          {allTimePR !== null && (
+            <div className="rounded-xl bg-surface2 px-4 py-3">
+              <p className="text-sm text-textMuted">
+                All-time PR:{' '}
+                <span className="font-semibold text-textPrimary">
+                  {allTimePR.weight} lbs &times; {allTimePR.reps} reps
+                </span>
+                <span className="text-textMuted">
+                  {' '}({new Date(allTimePR.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })})
+                </span>
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Session browser */}
@@ -228,7 +256,14 @@ export function Progress() {
               {sessionLog && (
                 <div className="space-y-4">
                   <div>
-                    <p className="text-base font-semibold text-textPrimary">{sessionDayName}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-base font-semibold text-textPrimary">{sessionDayName}</p>
+                      {sessionIsPR && (
+                        <span className="text-xs font-semibold text-accent2 bg-accent2/10 px-2 py-0.5 rounded-full leading-tight">
+                          🏆 PR!
+                        </span>
+                      )}
+                    </div>
                     <p className="text-sm text-textMuted mt-0.5">{formatDateLong(sessionLog.date)}</p>
                   </div>
 
@@ -237,10 +272,19 @@ export function Progress() {
                       const exerciseName =
                         EXERCISE_LIBRARY.find((e) => e.id === exLog.exerciseId)?.name ??
                         exLog.exerciseId;
+                      const isThisExercisePR =
+                        exLog.exerciseId === selectedId && sessionIsPR;
 
                       return (
                         <div key={exLog.exerciseId}>
-                          <p className="text-sm font-display text-textPrimary mb-2">{exerciseName}</p>
+                          <div className="flex items-center gap-2 mb-2">
+                            <p className="text-sm font-display text-textPrimary">{exerciseName}</p>
+                            {isThisExercisePR && (
+                              <span className="text-xs font-semibold text-accent2 bg-accent2/10 px-2 py-0.5 rounded-full leading-tight">
+                                🏆 PR!
+                              </span>
+                            )}
+                          </div>
                           <div className="space-y-1">
                             {exLog.sets.map((set) => (
                               <p key={set.setNumber} className="text-sm text-textMuted">

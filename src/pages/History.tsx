@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { WorkoutLog, Program } from '../types';
 import { getWorkoutLogs, getProgram } from '../lib/storage';
 import { EXERCISE_LIBRARY } from '../data/exercises';
+import { getSessionVolume } from '../lib/getPRs';
 
 function formatDate(isoString: string): string {
   if (!isoString) return 'Unknown date';
@@ -64,6 +65,12 @@ export function History() {
                 <div>
                   <p className="text-base font-semibold text-textPrimary">{dayName}</p>
                   <p className="text-sm text-textMuted mt-0.5">{formatDate(log.date)}</p>
+                  <p className="text-xs text-textMuted mt-1">
+                    Volume:{' '}
+                    <span className="font-medium text-textPrimary">
+                      {getSessionVolume(log).toLocaleString()} lbs
+                    </span>
+                  </p>
                 </div>
                 <span className="text-textMuted text-lg leading-none select-none">
                   {isExpanded ? '▲' : '▼'}
