@@ -148,8 +148,8 @@ export function Progress() {
                     border: '1px solid #e5e7eb',
                     fontSize: '0.875rem',
                   }}
-                  formatter={(value: number, name: string) => [
-                    `${value} lb`,
+                  formatter={(value, name) => [
+                    `${Number(value)} lb`,
                     name === 'weight' ? 'Max Weight' : 'Est. 1RM',
                   ]}
                 />
