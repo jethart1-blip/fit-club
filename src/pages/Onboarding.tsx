@@ -30,9 +30,9 @@ const SPORT_OPTIONS: { value: SplitId; label: string; description: string }[] = 
 
 export function Onboarding() {
   const navigate = useNavigate();
-  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5 | 6>(1);
+  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1);
 
-  // Step 1 – Name
+  // Step 1
   const [name, setName] = useState('');
 
   // Step 2
@@ -86,8 +86,7 @@ export function Onboarding() {
     }
     if (step === 3) return equipment.length > 0;
     if (step === 4) return goal !== '' && (goal !== 'sports_performance' || sportSplitId !== '');
-    if (step === 5) return splitId !== '';
-    return true;
+    return splitId !== '';
   }
 
   function handleNext() {
@@ -96,12 +95,12 @@ export function Onboarding() {
       handleSubmit();
       return;
     }
-    if (step < 5) setStep((s) => (s + 1) as 1 | 2 | 3 | 4 | 5 | 6);
+    if (step < 5) setStep((s) => (s + 1) as 1 | 2 | 3 | 4 | 5);
     else handleSubmit();
   }
 
   function handleBack() {
-    if (step > 1) setStep((s) => (s - 1) as 1 | 2 | 3 | 4 | 5 | 6);
+    if (step > 1) setStep((s) => (s - 1) as 1 | 2 | 3 | 4 | 5);
   }
 
   function handleSubmit() {
