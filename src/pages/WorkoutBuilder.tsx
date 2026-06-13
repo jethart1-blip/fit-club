@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react'
+import { useSearchParams, useNavigate } from 'react-router-dom'
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd'
 import type { DropResult } from '@hello-pangea/dnd'
 import { EXERCISE_LIBRARY } from '../data/exercises'
+import { generateProgram } from '../lib/generateProgram'
 import {
   getCustomExercises,
   getCustomWorkouts,
@@ -10,6 +12,10 @@ import {
   getCustomSplits,
   saveCustomSplit,
   deleteCustomSplit,
+  getProfile,
+  saveProfile,
+  saveProgram,
+  setCurrentDayIndex,
 } from '../lib/storage'
 import type {
   CustomExercise,
@@ -60,6 +66,10 @@ type WorkoutItem = CustomWorkoutExercise & { uid: string }
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function WorkoutBuilder() {
+  const [searchParams] = useSearchParams()
+  const navigate = useNavigate()
+  const isOnboarding = searchParams.get('onboarding') === '1'
+
   const [workoutName, setWorkoutName] = useState('')
   const [workoutItems, setWorkoutItems] = useState<WorkoutItem[]>([])
   const [search, setSearch] = useState('')
@@ -251,6 +261,15 @@ export function WorkoutBuilder() {
 
   return (
     <div className="space-y-4">
+
+      {isOnboarding && (
+        <div className="bg-accent/10 border border-accent/30 rounded-2xl p-4 mb-4">
+          <p className="text-sm font-semibold text-textPrimary">🛠️ Build Your Custom Split</p>
+          <p className="text-xs text-textMuted mt-1">
+            Create one or more workouts below, then assemble them into a split using "Build a Custom Split". Once you've saved a split, you can activate it and start training.
+          </p>
+        </div>
+      )}
 
       {/* ── Top bar: name + save ─────────────────────────────────────────────── */}
       <div className="space-y-2">
@@ -745,15 +764,36 @@ export function WorkoutBuilder() {
                         {split.workoutIds.length} day{split.workoutIds.length !== 1 ? 's' : ''}
                       </p>
                     </div>
-                    <button
-                      onClick={() => {
-                        deleteCustomSplit(split.id)
-                        setCustomSplits(getCustomSplits())
-                      }}
-                      className="text-xs text-textMuted hover:text-red-400 font-semibold transition-colors"
-                    >
-                      Delete
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => {
+                          const profile = getProfile()
+                          if (!profile) return
+                          const updated = { ...profile, splitId: 'custom' as const, customSplitId: split.id }
+                          try {
+                            const result = generateProgram(updated)
+                            saveProfile(updated)
+                            saveProgram(result)
+                            setCurrentDayIndex(0)
+                            navigate('/today')
+                          } catch (err) {
+                            alert(err instanceof Error ? err.message : 'Failed to activate split.')
+                          }
+                        }}
+                        className="text-xs font-semibold text-accent bg-accent/10 px-3 py-1.5 rounded-lg hover:bg-accent/20 active:scale-95 transition-transform transition-colors"
+                      >
+                        Activate & Start Training
+                      </button>
+                      <button
+                        onClick={() => {
+                          deleteCustomSplit(split.id)
+                          setCustomSplits(getCustomSplits())
+                        }}
+                        className="text-xs text-textMuted hover:text-red-400 font-semibold transition-colors"
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>

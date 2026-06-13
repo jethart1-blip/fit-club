@@ -133,8 +133,12 @@ export function Home() {
   useEffect(() => {
     const p = getProfile();
     const prog = getProgram();
-    if (!p || !prog) {
+    if (!p) {
       navigate('/onboarding');
+      return;
+    }
+    if (!prog) {
+      navigate('/builder?onboarding=1');
       return;
     }
     setProfile(p);

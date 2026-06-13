@@ -122,6 +122,13 @@ export function Onboarding() {
       return;
     }
 
+    if (step === 5 && splitId === 'custom') {
+      const profile = buildProfile();
+      saveProfile(profile);
+      navigate('/builder?onboarding=1');
+      return;
+    }
+
     if (step === 5) {
       const profile = buildProfile();
       const result = generateProgram(profile);
