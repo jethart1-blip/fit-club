@@ -9,6 +9,7 @@ import {
   getCurrentDayIndex,
   setCurrentDayIndex,
   swapExercise,
+  setExerciseRestOverride,
   getExerciseNotes,
   saveExerciseNote,
 } from '../lib/storage';
@@ -26,6 +27,10 @@ import { STRETCH_SEQUENCE } from '../data/stretches';
 import type { Stretch } from '../data/stretches';
 
 type SetInputs = { weight: string; reps: string; rpe: string };
+
+function getEffectiveRest(ex: ProgramExercise, dayRestSeconds: number): number {
+  return ex.restSecondsOverride ?? dayRestSeconds;
+}
 
 const RING_RADIUS = 38;
 const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
@@ -789,6 +794,44 @@ export function TodaysWorkout() {
                         {adjustedTargetSets} sets &times; {exercise.targetRepsMin}–{exercise.targetRepsMax}{' '}
                         reps
                       </p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="text-xs text-textMuted">Rest:</span>
+                        <button
+                          onClick={() => {
+                            const current = getEffectiveRest(exercise, day.restSeconds);
+                            const next = Math.max(30, current - 15);
+                            setExerciseRestOverride(day.id, exercise.slot, next);
+                            const updated = getProgram();
+                            if (updated) {
+                              const updatedDay = updated.days.find((d) => d.id === day.id);
+                              const updatedEx = updatedDay?.exercises.find((e) => e.slot === exercise.slot);
+                              if (updatedEx) setExercises((prev) => prev.map((e) => e.slot === exercise.slot ? updatedEx : e));
+                            }
+                          }}
+                          className="w-6 h-6 flex items-center justify-center rounded-lg bg-surface2 text-textPrimary hover:bg-surface2/80 text-xs font-bold transition-colors"
+                        >
+                          −
+                        </button>
+                        <span className="text-xs text-textPrimary font-medium w-10 text-center">
+                          {getEffectiveRest(exercise, day.restSeconds)}s
+                        </span>
+                        <button
+                          onClick={() => {
+                            const current = getEffectiveRest(exercise, day.restSeconds);
+                            const next = Math.min(300, current + 15);
+                            setExerciseRestOverride(day.id, exercise.slot, next);
+                            const updated = getProgram();
+                            if (updated) {
+                              const updatedDay = updated.days.find((d) => d.id === day.id);
+                              const updatedEx = updatedDay?.exercises.find((e) => e.slot === exercise.slot);
+                              if (updatedEx) setExercises((prev) => prev.map((e) => e.slot === exercise.slot ? updatedEx : e));
+                            }
+                          }}
+                          className="w-6 h-6 flex items-center justify-center rounded-lg bg-surface2 text-textPrimary hover:bg-surface2/80 text-xs font-bold transition-colors"
+                        >
+                          +
+                        </button>
+                      </div>
                       {suggestedWeights[exercise.exerciseId] !== null &&
                         suggestedWeights[exercise.exerciseId] !== undefined && (
                         <button
@@ -909,7 +952,7 @@ export function TodaysWorkout() {
                           placeholder="0"
                           value={row.reps}
                           onChange={(e) => updateInput(exercise.exerciseId, i, 'reps', e.target.value)}
-                          onBlur={() => handleRepsBlur(exercise.exerciseId, i, day.restSeconds, isLastInGroup)}
+                          onBlur={() => handleRepsBlur(exercise.exerciseId, i, getEffectiveRest(exercise, day.restSeconds), isLastInGroup)}
                           className="bg-surface2 border border-surface2 rounded-lg px-3 py-2 text-sm text-textPrimary placeholder-textMuted w-full focus:outline-none focus:border-accent transition-colors"
                         />
                         <input

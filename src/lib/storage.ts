@@ -236,6 +236,21 @@ export function saveExerciseNote(exerciseId: string, note: string): void {
   localStorage.setItem(KEYS.exerciseNotes, JSON.stringify(existing));
 }
 
+export function setExerciseRestOverride(dayId: string, slot: MuscleGroupSlot, restSeconds: number): void {
+  const program = getProgram();
+  if (program === null) return;
+
+  const day = program.days.find((d) => d.id === dayId);
+  if (!day) return;
+
+  const exercise = day.exercises.find((e) => e.slot === slot);
+  if (!exercise) return;
+
+  exercise.restSecondsOverride = restSeconds;
+
+  saveProgram(program);
+}
+
 export function swapExercise(dayId: string, slot: MuscleGroupSlot, newExerciseId: string): void {
   const program = getProgram();
   if (program === null) return;

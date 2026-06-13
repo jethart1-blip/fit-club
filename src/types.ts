@@ -76,6 +76,7 @@ export interface ProgramExercise {
   targetRepsMin: number;
   targetRepsMax: number;
   supersetGroup?: number;
+  restSecondsOverride?: number;
 }
 
 export interface ProgramDay {
