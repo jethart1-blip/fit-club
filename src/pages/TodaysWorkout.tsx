@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import type { Program, WorkoutLog, ExerciseLog, SetEntry, ProgramExercise } from '../types';
 import {
   getProgram,
@@ -18,8 +18,23 @@ type SetInputs = { weight: string; reps: string };
 const RING_RADIUS = 38;
 const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
 
+const READINESS_LABELS: Record<number, string> = {
+  1: 'Exhausted', 2: 'Exhausted',
+  3: 'Tired',    4: 'Tired',
+  5: 'Okay',     6: 'Okay',
+  7: 'Good',     8: 'Good',
+  9: 'Amazing',  10: 'Amazing',
+};
+
 export function TodaysWorkout() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const requireCheckin = searchParams.get('checkin') === '1';
+
+  const [checkedIn, setCheckedIn] = useState(!requireCheckin);
+  const [readiness, setReadiness] = useState<number | undefined>(undefined);
+  const [hoveredReadiness, setHoveredReadiness] = useState<number | undefined>(undefined);
+
   const [program, setProgram] = useState<Program | null>(null);
   const [dayIndex, setDayIndex] = useState(0);
   const [logs, setLogs] = useState<WorkoutLog[]>([]);
@@ -140,6 +155,7 @@ export function TodaysWorkout() {
       date: new Date().toISOString(),
       programDayId: day.id,
       exercises: exerciseLogs,
+      ...(readiness !== undefined && { readiness }),
     };
 
     saveWorkoutLog(log);
@@ -149,6 +165,57 @@ export function TodaysWorkout() {
   }
 
   if (!program) return null;
+
+  if (!checkedIn) {
+    const displayValue = hoveredReadiness ?? readiness;
+    const label = displayValue ? READINESS_LABELS[displayValue] : null;
+
+    return (
+      <div className="min-h-screen bg-pageBg flex flex-col items-center justify-center p-6">
+        <div className="bg-surface rounded-2xl p-8 w-full max-w-sm space-y-7">
+          <h1 className="font-display text-2xl text-textPrimary text-center leading-tight">
+            How are you feeling today?
+          </h1>
+
+          <div className="space-y-4">
+            <div className="flex flex-wrap justify-center gap-2">
+              {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
+                <button
+                  key={n}
+                  onClick={() => setReadiness(n)}
+                  onMouseEnter={() => setHoveredReadiness(n)}
+                  onMouseLeave={() => setHoveredReadiness(undefined)}
+                  className={`w-10 h-10 rounded-xl font-display text-base font-semibold transition-colors ${
+                    readiness === n
+                      ? 'bg-accent text-pageBg'
+                      : 'bg-surface2 text-textPrimary hover:bg-surface2/70'
+                  }`}
+                >
+                  {n}
+                </button>
+              ))}
+            </div>
+
+            <p className="text-center text-sm font-medium h-5 transition-all">
+              {label ? (
+                <span className="text-accent">{label}</span>
+              ) : (
+                <span className="text-textMuted">Tap a number</span>
+              )}
+            </p>
+          </div>
+
+          <button
+            disabled={readiness === undefined}
+            onClick={() => setCheckedIn(true)}
+            className="w-full bg-accent hover:bg-accent/90 active:bg-accent/80 disabled:opacity-40 disabled:cursor-not-allowed text-pageBg font-semibold rounded-xl py-3 text-sm transition-colors"
+          >
+            Continue
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const day = program.days[dayIndex % program.days.length];
 
