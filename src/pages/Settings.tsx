@@ -59,6 +59,7 @@ export function Settings() {
   const [editEquipment, setEditEquipment] = useState<EquipmentType[]>([]);
   const [profileSaveMessage, setProfileSaveMessage] = useState('');
   const [profileSaveError, setProfileSaveError] = useState('');
+  const [expandedPreviewId, setExpandedPreviewId] = useState<string | null>(null);
 
   useEffect(() => {
     const p = getProfile();
@@ -221,6 +222,11 @@ export function Settings() {
     navigate('/onboarding');
   }
 
+  function getDayTemplateMuscleSummary(slots: string[]): string {
+    const unique = Array.from(new Set(slots));
+    return unique.map((s) => s.charAt(0).toUpperCase() + s.slice(1)).join(', ');
+  }
+
   if (!profile) return null;
 
   const splitChanged =
@@ -361,26 +367,49 @@ export function Settings() {
               .filter((split) => split.id !== 'custom' || customSplits.length > 0)
               .filter((split) => !SPORT_SPLIT_IDS.includes(split.id) || split.id === profile.splitId)
               .map((split) => (
-                <label key={split.id} className={splitCardClass(selectedSplitId === split.id)}>
-                  <input
-                    type="radio"
-                    name="splitId"
-                    value={split.id}
-                    checked={selectedSplitId === split.id}
-                    onChange={() => setSelectedSplitId(split.id)}
-                    className="sr-only"
-                  />
-                  <div>
-                    <div>{split.name}</div>
-                    <div
-                      className={`text-xs font-normal mt-0.5 ${
-                        selectedSplitId === split.id ? 'text-accent' : 'text-textMuted'
-                      }`}
-                    >
-                      {split.description}
-                    </div>
+                <div key={split.id}>
+                  <div className={splitCardClass(selectedSplitId === split.id) + ' flex items-center justify-between gap-2'}>
+                    <label className="flex items-center gap-3 cursor-pointer flex-1">
+                      <input
+                        type="radio"
+                        name="splitId"
+                        value={split.id}
+                        checked={selectedSplitId === split.id}
+                        onChange={() => setSelectedSplitId(split.id)}
+                        className="sr-only"
+                      />
+                      <div className="flex-1">
+                        <div>{split.name}</div>
+                        <div className={`text-xs font-normal mt-0.5 ${selectedSplitId === split.id ? 'text-accent' : 'text-textMuted'}`}>
+                          {split.description}
+                        </div>
+                      </div>
+                    </label>
+                    {split.dayTemplates.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setExpandedPreviewId((prev) => prev === split.id ? null : split.id);
+                        }}
+                        className="text-xs text-textMuted hover:text-textPrimary shrink-0 px-2"
+                      >
+                        {expandedPreviewId === split.id ? '▲ Hide' : '▼ Preview'}
+                      </button>
+                    )}
                   </div>
-                </label>
+                  {expandedPreviewId === split.id && split.dayTemplates.length > 0 && (
+                    <div className="ml-2 mt-1 mb-2 space-y-1.5 border-l-2 border-surface2 pl-3">
+                      {split.dayTemplates.map((day) => (
+                        <div key={day.id}>
+                          <p className="text-xs font-medium text-textPrimary">{day.name}</p>
+                          <p className="text-xs text-textMuted">{getDayTemplateMuscleSummary(day.slots)}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
               ))}
             {customSplits.map((cs) => {
               const isSelected = selectedSplitId === 'custom' && selectedCustomSplitId === cs.id;
