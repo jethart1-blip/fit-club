@@ -361,15 +361,26 @@ export function TodaysWorkout() {
                   </p>
                 )}
               </div>
-              {hasAlternatives && (
-                <button
-                  onClick={() => handleSwap(exercise, day.id)}
-                  className="shrink-0 flex items-center gap-1 text-sm text-accent border border-surface2 rounded-lg px-3 py-1.5 hover:bg-surface2 active:bg-surface2/80 transition-colors"
+              <div className="shrink-0 flex flex-col gap-1.5">
+                <a
+                  href={`https://www.youtube.com/results?search_query=${encodeURIComponent(exName + ' exercise form')}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1 text-sm text-textMuted border border-surface2 rounded-lg px-3 py-1.5 hover:bg-surface2 hover:text-textPrimary active:bg-surface2/80 transition-colors"
                 >
-                  <span>↔</span>
-                  <span>Swap</span>
-                </button>
-              )}
+                  <span>▶</span>
+                  <span>Demo</span>
+                </a>
+                {hasAlternatives && (
+                  <button
+                    onClick={() => handleSwap(exercise, day.id)}
+                    className="flex items-center gap-1 text-sm text-accent border border-surface2 rounded-lg px-3 py-1.5 hover:bg-surface2 active:bg-surface2/80 transition-colors"
+                  >
+                    <span>↔</span>
+                    <span>Swap</span>
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Set input rows */}
